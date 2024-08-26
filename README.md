@@ -5,8 +5,11 @@
 1. [Cabeçalho](#cabeçalho)
 2. [Descrição do Projeto](#descrição-do-projeto)
 3. [Sprints](#sprints)
-4. [User Stories](#user-stories)
-5. [Requisitos](#requisitos)
+4. [Modelo Arquitetural](#modelo-arquitetural)
+5. [MVP - Minimun Viable Product](#mvp---minimun-viable-product)
+6. [User Stories](#user-stories)
+7. [Protótipo](#protótipo)
+8. [Requisitos](#requisitos)
 
 ## Cabeçalho
 
