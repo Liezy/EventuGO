@@ -26,7 +26,18 @@ O Eventugo é uma solução desenvolvida para facilitar a gestão de créditos e
 
 ## Sprints
 
+## Modelo Arquitetural
+Acesse o modelo arquitetural do projeto [aqui.](https://github.com/user-attachments/files/16748555/Modelo.Arquitetural.pdf)
+
+## MVP - Minimun Viable Product
+Acesse o MVP [aqui.](https://alluring-sail-8e9.notion.site/Defini-o-do-MVP-a0464e5c8f5444a0993eddd301fc9ce1?pvs=4)
+
 ## User Stories
+
+Acesse o detalhamento das User Stories [aqui.](https://alluring-sail-8e9.notion.site/Detalhamento-das-User-Stories-60e8092f3edc454ea815fc32a8bf64ba?pvs=4)
+
+## Protótipo
+Acesse a prototipação do projeto [aqui.](https://www.figma.com/design/oF9N9hW6o6fzogKO31sm7A/EventuGo?node-id=0-1&t=fYKQsmzHXQXbOXxm-0)
                                                        
 ## Requisitos
 
