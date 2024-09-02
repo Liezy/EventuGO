@@ -29,6 +29,9 @@ O Eventugo é uma solução desenvolvida para facilitar a gestão de créditos e
 
 ## Sprints
 
+## Planejamento
+Acesse o planejamento do projeto [aqui.](https://alluring-sail-8e9.notion.site/Planejamento-das-Sprints-fffca21a82e280b89075d5bef259910e?pvs=4)
+
 ## Modelo Arquitetural
 Acesse o modelo arquitetural do projeto [aqui.](https://github.com/user-attachments/files/16748555/Modelo.Arquitetural.pdf)
 
