@@ -1,3 +1,10 @@
+# Ignore Python bytecode
+*.pyc
+__pycache__/
+
+# Ignore SQLite database
+db.sqlite3
+
 # Django #
 *.log
 *.pot
@@ -5,17 +12,9 @@
 __pycache__
 db.sqlite3
 media
-
+ 
 # Backup files # 
 *.bak 
-
-# If you are using PyCharm # 
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
 
 # AWS User-specific
 .idea/**/aws.xml
@@ -280,3 +279,4 @@ app.*.symbols
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
 !.vscode/settings.json
+EventuGo/db.sqlite3
