@@ -113,7 +113,7 @@ python -m venv venv
 
 4. Ative o ambiente virtual(Se estiver no windows faça pelo cmd ou powershell):
 ```bash
-venv/bin/activate
+venv/scripts/activate
 ou
 source venv/bin/activate
 ```
@@ -123,7 +123,7 @@ source venv/bin/activate
 pip install django
 ```
 
-6. Instale as dependências do projeto:
+6. Instale as dependências do projeto (caso haja algum):
 ```bash
 pip install -r requirements.txt
 ```
@@ -141,6 +141,11 @@ python manage.py createsuperuser
 9. Execute o servidor:
 ```bash
 pytohn manage.py runserver
+```
+
++ Caso tenha adicionado novas dependências ao projeto, atualize o arquivo `requirements.txt`:
+```bash
+pip freeze > requirements.txt
 ```
 
 ## Flutter/Frontend
