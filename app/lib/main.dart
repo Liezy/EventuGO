@@ -1,125 +1,351 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Cadastro de Eventos e Créditos',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MainPage(), // Tela principal
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class MainPage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MainPageState extends State<MainPage> {
+  int _currentIndex = 0;
+  final PageController _pageController = PageController();
 
-  void _incrementCounter() {
+  void _onTabTapped(int index) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _currentIndex = index;
     });
+    _pageController.jumpToPage(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    return Scaffold(
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        children: [
+          HomePage(), // Exibe a HomePage
+          CadastroUsuarioPage(), // Tela de Cadastro de Usuário
+          CadastroEventoPage(), // Tela de Cadastro de Evento
+          CreditosPage(), // Tela de Créditos
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+        selectedItemColor: Colors.blue, // Cor dos ícones selecionados
+        unselectedItemColor: Colors.grey, // Cor dos ícones não selecionados
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Usuário',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: 'Evento',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Créditos',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Home'),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+        child: Text('Bem-vindo à Home Page!', style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+class CadastroUsuarioPage extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
+
+  Future<void> cadastrarUsuario() async {
+    final String nome = _nomeController.text;
+    final String email = _emailController.text;
+    final String senha = _senhaController.text;
+
+    final url = Uri.parse('http://127.0.0.1:8000/users/api/users/'); //URL
+
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'username': nome,
+        'email': email,
+        'password': senha, // Altere para o campo esperado pela API
+        'first_name': 'dudun',
+        'last_name': 'duden',
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      // Cadastro bem-sucedido
+      print('Usuário cadastrado com sucesso');
+    } else {
+      // Falha no cadastro
+      print('Falha no cadastro: ${response.statusCode}');
+      print('Erro detalhado: ${response.body}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cadastro de Usuário'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.popUntil(context, ModalRoute.withName('/'));
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                decoration: InputDecoration(labelText: 'Nome'),
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              TextFormField(
+                controller: _senhaController,
+                decoration: InputDecoration(labelText: 'Senha'),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    cadastrarUsuario(); // Chama a função de cadastrar
+                  }
+                },
+                child: Text('Cadastrar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class CadastroEventoPage extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nomeEventoController = TextEditingController();
+  final TextEditingController _descricaoEventoController = TextEditingController();
+  final TextEditingController _dataInicioController = TextEditingController();
+  final TextEditingController _dataFimController = TextEditingController();
+
+  Future<void> cadastrarEvento() async {
+    final String nomeEvento = _nomeEventoController.text;
+    final String descricaoEvento = _descricaoEventoController.text;
+    final String dataInicio = _dataInicioController.text;
+    final String dataFim = _dataFimController.text;
+
+    final url = Uri.parse(
+        'http://127.0.0.1:8000/eventos/api/eventos/'); // Substitua pela URL da sua API
+
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'nome': nomeEvento,
+        'descricao': descricaoEvento,
+        'data_inicio': dataInicio, // Verifique o formato da data
+        'data_fim': dataFim,       // Verifique o formato da data
+        'organizador': '1',        // Substitua pelo organizador correto se for dinâmico
+      }),
+    );
+
+    if (response.statusCode == 201) {  // Sucesso deve ser 201 para criação de novo recurso
+      print('Evento cadastrado com sucesso');
+    } else {
+      print('Falha no cadastro do evento: ${response.statusCode}');
+      print('Erro detalhado: ${response.body}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cadastro de Evento'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.popUntil(context, ModalRoute.withName('/'));
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nomeEventoController,
+                decoration: InputDecoration(labelText: 'Nome do Evento'),
+              ),
+              TextFormField(
+                controller: _descricaoEventoController,
+                decoration: InputDecoration(labelText: 'Descrição'),
+              ),
+              TextFormField(
+                controller: _dataInicioController,
+                decoration: InputDecoration(labelText: 'Data de Início (YYYY-MM-DD)'),
+              ),
+              TextFormField(
+                controller: _dataFimController,
+                decoration: InputDecoration(labelText: 'Data de Fim (YYYY-MM-DD)'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    cadastrarEvento(); // Chama a função de cadastrar evento
+                  }
+                },
+                child: Text('Cadastrar Evento'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class CreditosPage extends StatelessWidget {
+  final TextEditingController _valorCreditoController = TextEditingController();
+  final String _usuarioId = '1'; // Defina o ID do usuário (pegue dinamicamente)
+  final String _eventoId = '1'; // Defina o ID do evento (pegue dinamicamente)
+
+  Future<void> adicionarCreditos(BuildContext context) async {
+    final String valorCredito = _valorCreditoController.text;
+
+    final url = Uri.parse(
+        'http://127.0.0.1:8000/credits/api/transacoes/'); // Substitua pela URL da sua API
+
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'username': _usuarioId, 
+        'evento': _eventoId, 
+        'tipo': 'RECARGA', 
+        'valor': valorCredito, 
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      // Sucesso na criação da transação (HTTP 201 Created)
+      print('Créditos adicionados com sucesso');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Créditos adicionados com sucesso!')),
+      );
+    } else {
+      print('Falha ao adicionar créditos: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao adicionar créditos.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Créditos'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.popUntil(context, ModalRoute.withName('/'));
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+          children: [
+            Text('Saldo Atual: R\$100,00', style: TextStyle(fontSize: 24)),
+            TextFormField(
+              controller: _valorCreditoController,
+              decoration: InputDecoration(labelText: 'Valor dos Créditos'),
+              keyboardType: TextInputType.number,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                adicionarCreditos(context); // Passa o `context` como parâmetro
+              },
+              child: Text('Adicionar Créditos'),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

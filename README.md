@@ -2,14 +2,22 @@
 
 ## Índice
 
-1. [Cabeçalho](#cabeçalho)
-2. [Descrição do Projeto](#descrição-do-projeto)
-3. [Sprints](#sprints)
-4. [Modelo Arquitetural](#modelo-arquitetural)
-5. [MVP - Minimun Viable Product](#mvp---minimun-viable-product)
-6. [User Stories](#user-stories)
-7. [Protótipo](#protótipo)
-8. [Requisitos](#requisitos)
+- [Eventugo - Sistema de Gerenciamento de Créditos para Eventos](#eventugo---sistema-de-gerenciamento-de-créditos-para-eventos)
+  - [Índice](#índice)
+  - [Cabeçalho](#cabeçalho)
+  - [Descrição do Projeto](#descrição-do-projeto)
+  - [Sprints](#sprints)
+  - [Planejamento](#planejamento)
+  - [Modelo Arquitetural](#modelo-arquitetural)
+  - [MVP - Minimun Viable Product](#mvp---minimun-viable-product)
+  - [User Stories](#user-stories)
+  - [Protótipo](#protótipo)
+  - [Requisitos](#requisitos)
+    - [Requisitos Funcionais (RF)](#requisitos-funcionais-rf)
+    - [Requisitos Não Funcionais (RNF)](#requisitos-não-funcionais-rnf)
+- [Rodando o Projeto](#rodando-o-projeto)
+  - [Django/Backend](#djangobackend)
+  - [Flutter/Frontend](#flutterfrontend)
 
 ## Cabeçalho
 
@@ -83,3 +91,78 @@ Acesse a prototipação do projeto [aqui.](https://www.figma.com/design/oF9N9hW6
 
 4. **RNF04 - Usabilidade:**  
    A interface deve ser intuitiva e fácil de usar, com foco na experiência do usuário.
+
+# Rodando o Projeto
+
+## Django/Backend
+
+1. Primeiramente, clone o repositório do projeto:
+```bash
+git clone https://github.com/Liezy/EventuGO.git
+```
+
+2. Acesse a pasta do projeto:
+```bash
+cd EventuGO/EventuGo
+```
+
+3. Crie um ambiente virtual:
+```bash
+python -m venv venv
+```
+
+4. Ative o ambiente virtual(Se estiver no windows faça pelo cmd ou powershell):
+```bash
+venv/scripts/activate
+ou
+source venv/bin/activate
+```
+
+5. Certifique-se que tem o django instalado:
+```bash
+pip install django
+```
+
+6. Instale as dependências do projeto (caso haja algum):
+```bash
+pip install -r requirements.txt
+```
+
+7. Execute as migrações do banco de dados:
+```bash
+python manage.py migrate
+```
+
+8. Crie um superusuário para acessar o painel administrativo:
+```bash
+python manage.py createsuperuser
+```
+
+9. Execute o servidor:
+```bash
+pytohn manage.py runserver
+```
+
++ Caso tenha adicionado novas dependências ao projeto, atualize o arquivo `requirements.txt`:
+```bash
+pip freeze > requirements.txt
+```
+
+## Flutter/Frontend
+
+Primeiramente certifique-se de ter o Flutter instalado em sua máquina. Para isso, siga as instruções disponíveis na [documentação oficial](https://flutter.dev/docs/get-started/install).
+
+1. Acesse a pasta do projeto:
+```bash
+cd /app
+```
+
+2. Rode o projeto:
+```bash
+flutter run
+```
+
+3. Caso necessário, instale as dependências do projeto:
+```bash
+flutter pub get
+```
