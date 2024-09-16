@@ -111,8 +111,10 @@ cd EventuGO/EventuGo
 python -m venv venv
 ```
 
-4. Ative o ambiente virtual:
+4. Ative o ambiente virtual(Se estiver no windows faça pelo cmd ou powershell):
 ```bash
+venv/bin/activate
+ou
 source venv/bin/activate
 ```
 
