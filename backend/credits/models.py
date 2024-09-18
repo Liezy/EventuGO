@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from evento.models import Evento
+from event.models import Event
 
 class Saldo(models.Model):
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saldo')
@@ -17,7 +17,7 @@ class Transacao(models.Model):
     )
 
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transacoes')
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='transacoes')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='transacoes')
     tipo = models.CharField(max_length=20, choices=TIPO_TRANSACAO)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data_hora = models.DateTimeField(default=timezone.now)

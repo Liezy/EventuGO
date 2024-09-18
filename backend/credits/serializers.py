@@ -9,7 +9,7 @@ class SaldoSerializer(serializers.ModelSerializer):
 class TransacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transacao
-        fields = ['id', 'usuario', 'evento', 'tipo', 'valor', 'data_hora']
+        fields = ['id', 'usuario', 'event', 'tipo', 'valor', 'data_hora']
 
 class HistoricoTransacaoSerializer(serializers.ModelSerializer):
     class Meta:

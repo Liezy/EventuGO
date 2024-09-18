@@ -1,18 +1,18 @@
 from rest_framework import viewsets
 from django.contrib.auth import get_user_model
-from .models import UserProfile, LoginHistory
-from .serializers import UserSerializer, UserProfileSerializer, LoginHistorySerializer
+from .models import Customer, Employee, EmpLoginHistory
+from .serializers import CustomerSerializer, EmployeeSerializer, EmpLoginHistorySerializer
 
 User = get_user_model()
 
-class UserViewSet(viewsets.ModelViewSet):
+class CustomerViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomerSerializer
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+    serializer_class = EmployeeSerializer
 
-class LoginHistoryViewSet(viewsets.ModelViewSet):
+class EmpLoginHistoryViewSet(viewsets.ModelViewSet):
     queryset = LoginHistory.objects.all()
-    serializer_class = LoginHistorySerializer
+    serializer_class = EmpLoginHistorySerializer

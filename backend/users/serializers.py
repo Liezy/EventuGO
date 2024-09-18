@@ -1,20 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import UserProfile, LoginHistory
+from .models import Customer, Employee, EmpLoginHistory
+
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
+class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'organizador_evento']
+        fields = ['uid', 'first_name', 'last_name', 'cpf', 'passwd_hash', 'phone', 'address', 'created_at', 'birth_date', 'last_access']
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['id', 'user', 'nome', 'foto', 'telefone', 'endereco']
+        fields = ['uid', 'fullname', 'passwd_hash', 'type', 'created_at', 'active', 'enterprise']
 
-class LoginHistorySerializer(serializers.ModelSerializer):
+class EmpLoginHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = LoginHistory
-        fields = ['id', 'user', 'login_time', 'ip_address']
+        fields = ['uid', 'ip_address', 'time', 'user']
