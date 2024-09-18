@@ -13,7 +13,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['uid', 'fullname', 'passwd_hash', 'type', 'created_at', 'active', 'enterprise']
+        fields = ['uid', 'fullname', 'passwd_hash', 'type', 'created_at', 'active', """'enterprise'"""]
 
 class EmpLoginHistorySerializer(serializers.ModelSerializer):
     class Meta:

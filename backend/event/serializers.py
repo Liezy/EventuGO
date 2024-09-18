@@ -4,7 +4,7 @@ from .models import Event, Balance, Transaction
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['uid', 'name', 'description', 'type', 'start_date', 'end_date', 'enterprise']
+        fields = ['uid', 'name', 'description', 'type', 'start_date', 'end_date', """'enterprise'"""]
 
 class BalanceSerializer(serializers.ModelSerializer):
     class Meta:

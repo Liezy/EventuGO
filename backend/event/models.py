@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import Customer
 from django.conf import settings
 
 class Event(models.Model):
@@ -8,7 +9,7 @@ class Event(models.Model):
     type = models.CharField(max_length=50)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
+    # enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

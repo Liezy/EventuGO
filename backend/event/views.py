@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Event
+from .models import Event, Balance, Transaction
 from .serializers import EventSerializer, BalanceSerializer, TransactionSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
