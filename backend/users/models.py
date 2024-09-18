@@ -24,7 +24,7 @@ class Employee(models.Model):  # Funcionário
     type = models.CharField(max_length=50)  
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
-    enterprise = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.fullname
