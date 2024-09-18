@@ -28,7 +28,7 @@ class Transaction(models.Model):
     type = models.CharField(max_length=50)
     hash = models.CharField(max_length=255)
     done_at = models.DateTimeField(auto_now_add=True)
-    currency = models.ForeignKey(Balance), on_delete=models.CASCADE)  
+    currency = models.ForeignKey(Balance, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.type} - {self.value}'
