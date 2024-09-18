@@ -37,5 +37,8 @@ class LoginHistory(models.Model):
     time = models.DateTimeField(auto_now_add=True, verbose_name="Hora de Login")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
+    class Meta:
+        verbose_name = "Histórico de Login"
+
     def __str__(self):
         return f'Login from {self.ip_address} at {self.time}'
