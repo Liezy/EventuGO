@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     address = models.TextField(verbose_name="Endereço")
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
-    birth_date = models.DateField(verbose_name="Data de Nascimento")
+    birth_date = models.DateField(verbose_name="Data de Nascimento", null=True, blank=True)
 
     TYPE_CHOICES = [
         (1, 'Cliente'),
@@ -38,6 +38,7 @@ class LoginHistory(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
     class Meta:
+        verbose_name = "Histórico de Login"
         verbose_name = "Histórico de Login"
 
     def __str__(self):
