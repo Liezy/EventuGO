@@ -1,9 +1,8 @@
 from django.db import models
-from users.models import Customer
+from users.models import CustomUser
 from django.conf import settings
 
 class Event(models.Model):
-    uid = models.UUIDField(primary_key=True, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
     type = models.CharField(max_length=50)
@@ -18,7 +17,7 @@ class Balance(models.Model):
     uid = models.UUIDField(primary_key=True, editable=False)
     currency = models.DecimalField(max_digits=10, decimal_places=2)  
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.user} - {self.event}'
