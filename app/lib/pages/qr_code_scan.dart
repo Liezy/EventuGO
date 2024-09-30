@@ -12,7 +12,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
   final String apiUrlSaldos = "http://127.0.0.1:8000/event/api/saldos/";
   final String apiUrlTransacoes = "http://127.0.0.1:8000/event/api/transacoes/";
 
-  String? qrValue; // Para armazenar o valor do QR Code
+  String? qrValue;
   String? tipoTransacao;
   double? valor;
   String? evento;
@@ -34,7 +34,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
                   if (barcode.rawValue != null) {
                     final String code = barcode.rawValue!;
                     print('QR Code detectado: $code');
-                    _processQrData(code); // Processa os dados do QR Code
+                    _processQrData(code);
                   }
                 }
               },
@@ -46,26 +46,23 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     );
   }
 
-  // Processa os dados do QR Code e atualiza o estado
   void _processQrData(String code) {
     setState(() {
-      print('Código QR detectado: $code'); // Debug
+      print('Código QR detectado: $code');
       try {
         Map<String, dynamic> qrData = jsonDecode(code);
         tipoTransacao = qrData['type'];
         valor = qrData['value'] ?? 0.0;
-        // Definindo um valor padrão para currency
         evento = qrData['currency'] ?? "ceaa8388-3a87-4a17-ad40-5815f249ed35";
         idTransacao = qrData['hash'];
-        qrValue = code; // Armazena o valor do QR Code
-        print('Dados do QR Code processados: $qrData'); // Debug
+        qrValue = code;
+        print('Dados do QR Code processados: $qrData');
       } catch (e) {
-        print('Erro ao processar dados do QR Code: $e'); // Debug
+        print('Erro ao processar dados do QR Code: $e');
       }
     });
   }
 
-  // Cria a interface para exibir os dados do QR Code
   Widget _buildQrDataDisplay() {
     return Card(
       margin: const EdgeInsets.all(16.0),
@@ -91,7 +88,6 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     );
   }
 
-  // Método para efetuar a recarga
   Future<void> _efetuarRecarga() async {
     if (tipoTransacao != null && valor != null && evento != null && idTransacao != null) {
       try {
@@ -99,7 +95,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
           "value": valor,
           "type": tipoTransacao!.toLowerCase(),
           "hash": idTransacao,
-          "currency": "ceaa8388-3a87-4a17-ad40-5815f249ed35", // Usando valor padrão
+          "currency": "ceaa8388-3a87-4a17-ad40-5815f249ed35", // Valor padrão
         };
 
         final response = await http.post(
@@ -110,12 +106,10 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
           body: jsonEncode(transacaoData),
         );
 
-        print('Resposta da API: ${response.statusCode} - ${response.body}'); // Debug
-
         if (response.statusCode == 201) {
           print('Transação registrada com sucesso.');
           // Após registrar a transação, atualize o saldo
-          await _atualizarSaldo(evento!, valor!, 'ceaa8388-3a87-4a17-ad40-5815f249ed35', context); // uid fictício do saldo
+          await _atualizarSaldo(evento!, valor!, 'ceaa8388-3a87-4a17-ad40-5815f249ed35', context);
         } else {
           print('Erro ao registrar a transação: ${response.body}');
           _showErrorDialog(context, 'Erro ao registrar a transação.');
@@ -126,29 +120,50 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     }
   }
 
-  // Método para atualizar o saldo usando PATCH
   Future<void> _atualizarSaldo(String evento, double valor, String uid, BuildContext context) async {
     try {
-      Map<String, dynamic> saldoData = {
-        "currency": valor.toString(),  // Atualiza apenas o campo currency
-      };
-
-      final response = await http.patch(
-        Uri.parse("$apiUrlSaldos$uid/"),  // O uid do saldo específico
+      // Primeiro, obtenha o saldo atual
+      final responseGet = await http.get(
+        Uri.parse("$apiUrlSaldos$uid/"),
         headers: {
           "Content-Type": "application/json",
         },
-        body: jsonEncode(saldoData),
       );
 
-      print('Resposta da API de saldo: ${response.statusCode} - ${response.body}'); // Debug
+      if (responseGet.statusCode == 200) {
+        Map<String, dynamic> saldoData = jsonDecode(responseGet.body);
+        double saldoAtual = double.parse(saldoData['currency']);  // Valor atual do saldo
 
-      if (response.statusCode == 200) {
-        print('Saldo atualizado com sucesso.');
-        _showSuccessDialog(context, tipoTransacao!, valor);
+        // Agora, modifique o saldo dependendo do tipo de transação
+        if (tipoTransacao == 'recarga') {
+          saldoAtual += valor;  // Adiciona o valor ao saldo
+        } else if (tipoTransacao == 'debito') {
+          saldoAtual -= valor;  // Subtrai o valor do saldo
+        }
+
+        // Atualiza o saldo com o novo valor
+        Map<String, dynamic> saldoAtualizado = {
+          "currency": saldoAtual.toString(),
+        };
+
+        final responsePatch = await http.patch(
+          Uri.parse("$apiUrlSaldos$uid/"),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: jsonEncode(saldoAtualizado),
+        );
+
+        if (responsePatch.statusCode == 200) {
+          print('Saldo atualizado com sucesso.');
+          _showSuccessDialog(context, tipoTransacao!, valor);
+        } else {
+          print('Erro ao atualizar o saldo: ${responsePatch.body}');
+          _showErrorDialog(context, 'Erro ao atualizar o saldo.');
+        }
       } else {
-        print('Erro ao atualizar o saldo: ${response.body}');
-        _showErrorDialog(context, 'Erro ao atualizar o saldo.');
+        print('Erro ao obter o saldo atual: ${responseGet.body}');
+        _showErrorDialog(context, 'Erro ao obter o saldo atual.');
       }
     } catch (e) {
       print('Erro: $e');
@@ -200,7 +215,6 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
   }
 }
 
-// Extensão para capitalizar a primeira letra
 extension StringExtension on String {
   String capitalizeFirst() {
     return this.length > 0 ? this[0].toUpperCase() + this.substring(1) : this;
