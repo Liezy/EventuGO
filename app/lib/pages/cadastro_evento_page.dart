@@ -16,7 +16,7 @@ class CadastroEventoPage extends StatelessWidget {
     final String dataInicio = _dataInicioController.text;
     final String dataFim = _dataFimController.text;
 
-    final url = Uri.parse('http://127.0.0.1:8000/eventos/api/eventos/');
+    final url = Uri.parse('http://127.0.0.1:8000/event/api/eventos/');
 
     final response = await http.post(
       url,
@@ -24,11 +24,12 @@ class CadastroEventoPage extends StatelessWidget {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'nome': nomeEvento,
-        'descricao': descricaoEvento,
-        'data_inicio': dataInicio,
-        'data_fim': dataFim,
-        'organizador': '1',
+        'name': nomeEvento,
+        'description': descricaoEvento,
+        'type': '1',
+        'start_date': dataInicio,
+        'end_date': dataFim,
+        'company': '1',
       }),
     );
 

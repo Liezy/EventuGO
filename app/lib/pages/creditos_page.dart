@@ -10,7 +10,7 @@ class CreditosPage extends StatelessWidget {
   Future<void> adicionarCreditos(BuildContext context) async {
     final String valorCredito = _valorCreditoController.text;
 
-    final url = Uri.parse('http://127.0.0.1:8000/credits/api/transacoes/');
+    final url = Uri.parse('http://127.0.0.1:8000/event/api/saldos/');
 
     final response = await http.post(
       url,
@@ -18,10 +18,10 @@ class CreditosPage extends StatelessWidget {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'username': _usuarioId,
-        'evento': _eventoId,
+        'user': _usuarioId,
+        'event': _eventoId,
         'tipo': 'RECARGA',
-        'valor': valorCredito,
+        'currency': valorCredito,
       }),
     );
 
