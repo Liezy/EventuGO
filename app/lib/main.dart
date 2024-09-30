@@ -13,6 +13,8 @@ class MyApp extends StatelessWidget {
       title: 'Cadastro de Eventos e Créditos',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor:
+            Colors.white, // Define o fundo branco globalmente
       ),
       home: MainPage(), // Tela principal
       localizationsDelegates: [

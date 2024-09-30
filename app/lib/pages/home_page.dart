@@ -10,10 +10,25 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text('Home'),
       ),
       body: Center(
-        child: Text('Bem-vindo à Home Page!', style: TextStyle(fontSize: 24)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              '../../assets/images/eventugo.png', // Caminho da imagem
+              width: 150, // Largura da imagem
+              height: 150, // Altura da imagem
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Seja Bem-Vindo ao Eventugo!',
+              style: TextStyle(fontSize: 24),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -25,6 +25,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Define o fundo como branco
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
