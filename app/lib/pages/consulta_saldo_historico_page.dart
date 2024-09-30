@@ -53,6 +53,7 @@ class _ConsultaSaldoHistoricoPageState extends State<ConsultaSaldoHistoricoPage>
       );
     }
   }
+  
 
   Future<void> consultarHistorico(String usuarioUid, String eventoId) async {
     final historicoUrl = Uri.parse('http://127.0.0.1:8000/credits/api/historico/$usuarioUid/$eventoId/');
