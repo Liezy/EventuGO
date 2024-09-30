@@ -13,7 +13,7 @@ class CadastroUsuarioPage extends StatelessWidget {
     final String email = _emailController.text;
     final String senha = _senhaController.text;
 
-    final url = Uri.parse('http://127.0.0.1:8000/users/api/users/');
+    final url = Uri.parse('http://127.0.0.1:8000/users/api/usuarios/');
 
     final response = await http.post(
       url,
@@ -26,6 +26,9 @@ class CadastroUsuarioPage extends StatelessWidget {
         'password': senha,
         'first_name': 'dudun',
         'last_name': 'duden',
+        'cpf': '12345678910',
+        'phone': '99912345678',
+        'address': 'sul1000',
       }),
     );
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/home_page.dart';
 import 'package:app/pages/cadastro_usuario_page.dart';
-import 'package:app/pages/cadastro_evento_page.dart';
+import 'package:app/pages/manage_events/manage_events.dart';
 import 'package:app/pages/creditos_page.dart';
 import 'package:app/pages/transacao_qr_page.dart'; // Adicionei a importação da nova página
+import 'package:app/pages/consulta_saldo_historico_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -34,9 +35,10 @@ class _MainPageState extends State<MainPage> {
         children: [
           HomePage(), // Exibe a HomePage
           CadastroUsuarioPage(), // Tela de Cadastro de Usuário
-          CadastroEventoPage(), // Tela de Cadastro de Evento
+          ManageEventsPage(), // Tela de Cadastro de Evento
           CreditosPage(), // Tela de Créditos
           TransacaoQrPage(), // Nova Tela de Transação com QR Code
+          ConsultaSaldoHistoricoPage(), // Tela de consulta de saldo e histórico
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -55,7 +57,7 @@ class _MainPageState extends State<MainPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event),
-            label: 'Evento',
+            label: 'Gerenciar Eventos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
@@ -63,7 +65,11 @@ class _MainPageState extends State<MainPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code),
-            label: 'QR Code', // Novo item no menu
+            label: 'QR Code', // Novo item no menu para QR Code
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Consulta', // Novo item para a tela de consulta
           ),
         ],
       ),
