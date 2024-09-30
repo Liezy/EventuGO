@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:app/pages/main_page.dart'; // Importa a MainPage
 
 void main() {
@@ -14,6 +15,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MainPage(), // Tela principal
+      localizationsDelegates: [
+        GlobalMaterialLocalizations
+            .delegate, // Adiciona suporte a localizações do Material
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('pt', ''), // Suporte para o português
+      ],
     );
   }
 }
