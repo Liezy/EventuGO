@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:app/pages/qr_code_scan.dart'; // página de QR Code Scan
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,7 +14,27 @@ class _HomePageState extends State<HomePage> {
         title: Text('Home'),
       ),
       body: Center(
-        child: Text('Bem-vindo à Home Page!', style: TextStyle(fontSize: 24)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Bem-vindo à Home Page!',
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20), // Espaçamento entre o texto e o botão
+            ElevatedButton(
+              onPressed: () {
+                // Navega para a página de escaneamento de QR Code
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QrCodeScanPage(), // Página de scan
+                  ),
+                );
+              },
+              child: Text('Escanear QR Code'),
+            ),
+          ],        ),
       ),
     );
   }

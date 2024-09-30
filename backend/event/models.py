@@ -2,6 +2,7 @@ from django.db import models
 from users.models import CustomUser
 from company.models import Company
 from django.conf import settings
+import uuid
 
 class Event(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nome")
@@ -19,7 +20,7 @@ class Event(models.Model):
         return self.name
 
 class Balance(models.Model):  
-    uid = models.UUIDField(primary_key=True, editable=False, verbose_name="UID")
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")  # Adicione default=uuid.uuid4
     currency = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Saldo")  
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name="Evento")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
@@ -31,7 +32,7 @@ class Balance(models.Model):
         return f'{self.user} - {self.event}'
 
 class Transaction(models.Model):
-    uid = models.UUIDField(primary_key=True, editable=False, verbose_name="UID")
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
     value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
     type = models.CharField(max_length=50, verbose_name="Tipo")
     hash = models.CharField(max_length=255, verbose_name="Hash")
