@@ -55,7 +55,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         tipoTransacao = qrData['type'];
         valor = qrData['value'] ?? 0.0;
         // Definindo um valor padrão para currency
-        evento = qrData['currency'] ?? "37e84dff-3e8a-492a-802c-8464a5f24740";
+        evento = qrData['currency'] ?? "ceaa8388-3a87-4a17-ad40-5815f249ed35";
         idTransacao = qrData['hash'];
         qrValue = code; // Armazena o valor do QR Code
         print('Dados do QR Code processados: $qrData'); // Debug
@@ -99,7 +99,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
           "value": valor,
           "type": tipoTransacao!.toLowerCase(),
           "hash": idTransacao,
-          "currency": "37e84dff-3e8a-492a-802c-8464a5f24740", // Usando valor padrão
+          "currency": "ceaa8388-3a87-4a17-ad40-5815f249ed35", // Usando valor padrão
         };
 
         final response = await http.post(
@@ -114,7 +114,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
 
         if (response.statusCode == 201) {
           print('Transação registrada com sucesso.');
-          await _atualizarSaldo(evento!, valor!, tipoTransacao!, context);
+          // Após registrar a transação, atualize o saldo
+          await _atualizarSaldo(evento!, valor!, 'ceaa8388-3a87-4a17-ad40-5815f249ed35', context); // uid fictício do saldo
         } else {
           print('Erro ao registrar a transação: ${response.body}');
           _showErrorDialog(context, 'Erro ao registrar a transação.');
@@ -125,15 +126,15 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     }
   }
 
-  Future<void> _atualizarSaldo(String evento, double valor, String tipoTransacao, BuildContext context) async {
+  // Método para atualizar o saldo usando PATCH
+  Future<void> _atualizarSaldo(String evento, double valor, String uid, BuildContext context) async {
     try {
       Map<String, dynamic> saldoData = {
-        "currency": valor,
-        "event": evento,
+        "currency": valor.toString(),  // Atualiza apenas o campo currency
       };
 
-      final response = await http.post(
-        Uri.parse(apiUrlSaldos),
+      final response = await http.patch(
+        Uri.parse("$apiUrlSaldos$uid/"),  // O uid do saldo específico
         headers: {
           "Content-Type": "application/json",
         },
@@ -142,9 +143,9 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
 
       print('Resposta da API de saldo: ${response.statusCode} - ${response.body}'); // Debug
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200) {
         print('Saldo atualizado com sucesso.');
-        _showSuccessDialog(context, tipoTransacao, valor);
+        _showSuccessDialog(context, tipoTransacao!, valor);
       } else {
         print('Erro ao atualizar o saldo: ${response.body}');
         _showErrorDialog(context, 'Erro ao atualizar o saldo.');
