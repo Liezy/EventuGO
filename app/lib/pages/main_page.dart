@@ -5,6 +5,7 @@ import 'package:app/pages/manage_events/manage_events.dart';
 import 'package:app/pages/creditos_page.dart';
 import 'package:app/pages/transacao_qr_page.dart'; // Adicionei a importação da nova página
 import 'package:app/pages/consulta_saldo_historico_page.dart';
+import 'package:app/pages/qr_code_scan.dart'; // Importa o scanner
 
 class MainPage extends StatefulWidget {
   @override
@@ -39,6 +40,7 @@ class _MainPageState extends State<MainPage> {
           CreditosPage(), // Tela de Créditos
           TransacaoQrPage(), // Nova Tela de Transação com QR Code
           ConsultaSaldoHistoricoPage(), // Tela de consulta de saldo e histórico
+          QrCodeScanPage(), // Nova Tela de Escaneamento de QR Code
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -70,6 +72,10 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'Consulta', // Novo item para a tela de consulta
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera), // Ícone para escanear QR Code
+            label: 'Escanear', // Novo item no menu
           ),
         ],
       ),

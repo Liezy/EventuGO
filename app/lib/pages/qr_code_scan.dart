@@ -53,7 +53,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         Map<String, dynamic> qrData = jsonDecode(code);
         tipoTransacao = qrData['type'];
         valor = qrData['value'] ?? 0.0;
-        evento = qrData['currency'] ?? "ceaa8388-3a87-4a17-ad40-5815f249ed35";
+        evento = qrData['currency'] ?? "1c38e24c-32be-4194-9b3f-2d89e3e9448d";
         idTransacao = qrData['hash'];
         qrValue = code;
         print('Dados do QR Code processados: $qrData');
@@ -95,7 +95,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
           "value": valor,
           "type": tipoTransacao!.toLowerCase(),
           "hash": idTransacao,
-          "currency": "ceaa8388-3a87-4a17-ad40-5815f249ed35", // Valor padrão
+          "currency": "1c38e24c-32be-4194-9b3f-2d89e3e9448d", // Valor padrão
         };
 
         final response = await http.post(
@@ -109,7 +109,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         if (response.statusCode == 201) {
           print('Transação registrada com sucesso.');
           // Após registrar a transação, atualize o saldo
-          await _atualizarSaldo(evento!, valor!, 'ceaa8388-3a87-4a17-ad40-5815f249ed35', context);
+          await _atualizarSaldo(evento!, valor!, '1c38e24c-32be-4194-9b3f-2d89e3e9448d', context);
         } else {
           print('Erro ao registrar a transação: ${response.body}');
           _showErrorDialog(context, 'Erro ao registrar a transação.');
