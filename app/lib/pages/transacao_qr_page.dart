@@ -25,11 +25,10 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
       String idTransacao = _gerarIdTransacao();
       setState(() {
         _qrData = jsonEncode({
-          'id': idTransacao,
-          'valor': _valorController.text,
-          'tipo': _tipoTransacao,
-          'evento': _eventoController.text,
-          'data': DateTime.now().toIso8601String(),
+          'value': double.tryParse(_valorController.text) ?? 0.0,
+          'type': _tipoTransacao.toLowerCase(), // Exemplo: "recarga" ou "débito"
+          'hash': idTransacao, // ID da transação
+          'currency': _eventoController.text, // Use o evento como identificador
         });
       });
     }
@@ -71,9 +70,8 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
                       ),
                       DropdownButtonFormField<String>(
                         value: _tipoTransacao,
-                        decoration:
-                            InputDecoration(labelText: 'Tipo de Transação'),
-                        items: <String>['Recarga', 'Debitar']
+                        decoration: InputDecoration(labelText: 'Tipo de Transação'),
+                        items: <String>['Recarga', 'Débito']
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -88,11 +86,10 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
                       ),
                       TextFormField(
                         controller: _eventoController,
-                        decoration:
-                            InputDecoration(labelText: 'Nome do Evento'),
+                        decoration: InputDecoration(labelText: 'ID do Evento'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Por favor, insira o nome do evento';
+                            return 'Por favor, insira o ID do evento';
                           }
                           return null;
                         },
@@ -107,8 +104,7 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
                 ),
               ),
               SizedBox(height: 20),
-              if (_qrData !=
-                  null) // Exibe o QR Code apenas se os dados existirem
+              if (_qrData != null) // Exibe o QR Code apenas se os dados existirem
                 Card(
                   elevation: 4,
                   child: Padding(
