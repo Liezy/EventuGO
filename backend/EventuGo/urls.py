@@ -9,5 +9,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('company/', include('company.urls')),
     path('auth/', include('authentication.urls')),  # Inclui o app de autenticação
-     path('', lambda request: redirect('login')), 
+    path('', lambda request: redirect('home')), 
 ]

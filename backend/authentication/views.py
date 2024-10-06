@@ -1,13 +1,13 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
-# Create your views here.
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm, SignUpForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.db import IntegrityError
 
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'home/index.html'  # Template que será renderizado
+    login_url = '/auth/login/' 
 
 def login_view(request):
     form = LoginForm(request.POST or None)
@@ -22,14 +22,17 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("/")
+                return redirect('home')
             else:
-                msg = 'Invalid credentials'
+                msg = 'Credenciais inválidas'
         else:
-            msg = 'Error validating the form'
+            msg = 'Erro ao validar o formulário'
 
     return render(request, "accounts/login.html", {"form": form, "msg": msg})
 
+def logout_view(request):
+    logout(request)  # Encerra a sessão do usuário
+    return redirect('/auth/login/')
 
 def register_user(request):
     msg = None
@@ -38,19 +41,22 @@ def register_user(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get("username")
-            raw_password = form.cleaned_data.get("password1")
-            user = authenticate(username=username, password=raw_password)
+            try:
+                user = form.save()  # Salva o novo usuário
+                username = form.cleaned_data.get("username")
+                raw_password = form.cleaned_data.get("password1")
+                user = authenticate(username=username, password=raw_password)
 
-            msg = 'User created - please <a href="/login">login</a>.'
-            success = True
+                msg = 'Usuário criado - por favor <a href="/auth/login">faça login</a>.'
+                success = True
 
-            # return redirect("/login/")
-
+                return redirect("/auth/login/")
+            except IntegrityError:
+                msg = 'Erro ao criar usuário, CPF ou e-mail já existentes.'
         else:
-            msg = 'Form is not valid'
+            msg = 'Formulário não é válido'
     else:
         form = SignUpForm()
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
+

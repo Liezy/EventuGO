@@ -16,16 +16,16 @@
           <div class="card bg-secondary shadow border-0">
             <div class="card-header bg-transparent pb-5">
               <div class="text-muted text-center mt-2 mb-4">
-                Sign UP
+                Registrar
               </div>
             </div>
             <div class="card-body px-lg-5 py-lg-5">
               <div class="text-center text-muted mb-4">
 
                 {% if msg %}
-                  <small>{{ msg | safe }}</small>
+                  <small class="text-danger">{{ msg | safe }}</small>
                 {% else %}
-                  Add your credentials
+                  Insira suas credenciais
                 {% endif %}  
               
               </div>
@@ -41,53 +41,63 @@
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
                       </div>
-                      {{ form.username }}
+                      {{ form.username }}  <!-- Renderizando o campo username -->
                     </div>
                   </div>
-                  <span class="text-error">{{ form.username.errors }}</span>
+                  <span class="text-danger">{{ form.username.errors }}</span>
 
                   <div class="form-group">
                     <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-email-83"></i></span>
                       </div>
-                      {{ form.email }}
+                      {{ form.email }}  <!-- Renderizando o campo email -->
                     </div>
                   </div>
-                  <span class="text-error">{{ form.email.errors }}</span>
+                  <span class="text-danger">{{ form.email.errors }}</span>
 
                   <div class="form-group">
-                    <div class="input-group input-group-alternative">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-id-badge"></i></span>  <!-- Ícone para o campo CPF -->
+                      </div>
+                      {{ form.cpf }}  <!-- Renderizando o campo CPF -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.cpf.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                       </div>
-                      {{ form.password1 }}
+                      {{ form.password1 }}  <!-- Renderizando o campo password1 -->
                     </div>
                   </div>
-                  <span class="text-error">{{ form.password1.errors }}</span>
+                  <span class="text-danger">{{ form.password1.errors }}</span>
 
                   <div class="form-group">
-                    <div class="input-group input-group-alternative">
+                    <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                       </div>
-                      {{ form.password2 }}
+                      {{ form.password2 }}  <!-- Renderizando o campo password2 -->
                     </div>
                   </div>
-                  <span class="text-error">{{ form.password2.errors }}</span>
+                  <span class="text-danger">{{ form.password2.errors }}</span>
 
                   <div class="row my-4">
                     <div class="col-12">
                       <div class="custom-control custom-control-alternative custom-checkbox">
                         <input class="custom-control-input" id="customCheckRegister" type="checkbox">
                         <label class="custom-control-label" for="customCheckRegister">
-                          <span class="text-muted">I agree with the <a href="#!">Privacy Policy</a></span>
+                          <span class="text-muted">Eu concordo com a <a href="#!">Política de Privacidade</a></span>
                         </label>
                       </div>
                     </div>
                   </div>
                   <div class="text-center">
-                    <button type="submit" class="btn btn-primary mt-4">Create account</button>
+                    <button type="submit" class="btn btn-primary mt-4">Criar conta</button>
                   </div>
                 </form>
 
@@ -100,18 +110,12 @@
       </div>
 
       <div class="row mt-3">
-        <div class="col-3"></div>
-        <div class="col-3">
-          <a href="{% url 'login' %}" class="text-light"><small>Login</small></a>
-        </div>
-        <div class="col-3 text-right">
-          <a href="https://appseed.us/support" class="text-light"><small>Get Support</small></a>
+        <div class="col-12 text-center">
+          <a href="{% url 'login' %}" class="text-light"><small>Já tem uma conta? Faça login</small></a>
         </div>
       </div>
 
     </div>
-  </div>
-
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
