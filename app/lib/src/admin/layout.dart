@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:app/src/admin/home.dart'; // Importa a Home do Admin
-import 'package:app/src/admin/manage_events/manage_events.dart'; // Exemplo de página adicional
-import 'package:app/src/admin/qr_code_scan.dart'; // Exemplo de página adicional
+import 'package:app/src/client/home.dart'; // Importa a Home do Cliente
+import 'package:app/src/client/creditos_page.dart'; // Exemplo de página adicional
+import 'package:app/src/client/transacao_qr_page.dart'; // Exemplo de página adicional
 
-class AdminLayout extends StatefulWidget {
+class ClientLayout extends StatefulWidget {
   @override
-  _AdminLayoutState createState() => _AdminLayoutState();
+  _ClientLayoutState createState() => _ClientLayoutState();
 }
 
-class _AdminLayoutState extends State<AdminLayout> {
+class _ClientLayoutState extends State<ClientLayout> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
-    HomeAdminPage(),
-    ManageEventsPage(),
-    QrCodeScanPage(),
+    HomeClientPage(),
+    CreditosPage(),
+    TransacaoQrPage(),
   ];
 
   @override
@@ -48,12 +48,12 @@ class _AdminLayoutState extends State<AdminLayout> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Gerenciar Eventos',
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Créditos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code),
-            label: 'Escanear QR Code',
+            label: 'Transação QR',
           ),
         ],
       ),

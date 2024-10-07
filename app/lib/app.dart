@@ -29,8 +29,22 @@ class AppPage extends StatelessWidget {
                 textStyle: TextStyle(fontSize: 18),
               ),
             ),
-
-            // Adicionar Botão para cliente
+            SizedBox(height: 20), // Espaço entre os botões
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ClientLayout()), // Navega para a Home Cliente
+                );
+              },
+              child: Text('Cliente'),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                textStyle: TextStyle(fontSize: 18),
+              ),
+            ),
           ],
         ),
       ),

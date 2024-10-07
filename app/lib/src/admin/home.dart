@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class HomeAdminPage extends StatelessWidget {
+class HomeClientPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Text('Bem-vindo, Administrador!'),
+        title: Text('Bem-vindo, Cliente!'),
       ),
       body: Center(
         child: Column(
@@ -19,7 +19,7 @@ class HomeAdminPage extends StatelessWidget {
             ),
             SizedBox(height: 20),
             Text(
-              'Bem-vindo ao Eventugo, Admin!',
+              'Bem-vindo ao Eventugo!',
               style: TextStyle(fontSize: 24),
             ),
           ],
