@@ -53,7 +53,7 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         Map<String, dynamic> qrData = jsonDecode(code);
         tipoTransacao = qrData['type'];
         valor = qrData['value'] ?? 0.0;
-        evento = qrData['currency'] ?? "ceaa8388-3a87-4a17-ad40-5815f249ed35";
+        evento = qrData['currency'] ?? "1c38e24c-32be-4194-9b3f-2d89e3e9448d";
         idTransacao = qrData['hash'];
         qrValue = code;
         print('Dados do QR Code processados: $qrData');
@@ -76,7 +76,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
             Text('Valor: R\$ ${valor?.toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 18)),
             Text('ID do Evento: $evento', style: TextStyle(fontSize: 18)),
-            Text('ID da Transação: $idTransacao', style: TextStyle(fontSize: 18)),
+            Text('ID da Transação: $idTransacao',
+                style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _efetuarRecarga,
@@ -89,13 +90,16 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
   }
 
   Future<void> _efetuarRecarga() async {
-    if (tipoTransacao != null && valor != null && evento != null && idTransacao != null) {
+    if (tipoTransacao != null &&
+        valor != null &&
+        evento != null &&
+        idTransacao != null) {
       try {
         Map<String, dynamic> transacaoData = {
           "value": valor,
           "type": tipoTransacao!.toLowerCase(),
           "hash": idTransacao,
-          "currency": "ceaa8388-3a87-4a17-ad40-5815f249ed35", // Valor padrão
+          "currency": "1c38e24c-32be-4194-9b3f-2d89e3e9448d", // Valor padrão
         };
 
         final response = await http.post(
@@ -109,7 +113,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         if (response.statusCode == 201) {
           print('Transação registrada com sucesso.');
           // Após registrar a transação, atualize o saldo
-          await _atualizarSaldo(evento!, valor!, 'ceaa8388-3a87-4a17-ad40-5815f249ed35', context);
+          await _atualizarSaldo(
+              evento!, valor!, '1c38e24c-32be-4194-9b3f-2d89e3e9448d', context);
         } else {
           print('Erro ao registrar a transação: ${response.body}');
           _showErrorDialog(context, 'Erro ao registrar a transação.');
@@ -120,7 +125,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     }
   }
 
-  Future<void> _atualizarSaldo(String evento, double valor, String uid, BuildContext context) async {
+  Future<void> _atualizarSaldo(
+      String evento, double valor, String uid, BuildContext context) async {
     try {
       // Primeiro, obtenha o saldo atual
       final responseGet = await http.get(
@@ -132,13 +138,14 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
 
       if (responseGet.statusCode == 200) {
         Map<String, dynamic> saldoData = jsonDecode(responseGet.body);
-        double saldoAtual = double.parse(saldoData['currency']);  // Valor atual do saldo
+        double saldoAtual =
+            double.parse(saldoData['currency']); // Valor atual do saldo
 
         // Agora, modifique o saldo dependendo do tipo de transação
         if (tipoTransacao == 'recarga') {
-          saldoAtual += valor;  // Adiciona o valor ao saldo
+          saldoAtual += valor; // Adiciona o valor ao saldo
         } else if (tipoTransacao == 'debito') {
-          saldoAtual -= valor;  // Subtrai o valor do saldo
+          saldoAtual -= valor; // Subtrai o valor do saldo
         }
 
         // Atualiza o saldo com o novo valor
@@ -190,7 +197,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String tipoTransacao, double valor) {
+  void _showSuccessDialog(
+      BuildContext context, String tipoTransacao, double valor) {
     String message = tipoTransacao == 'recarga'
         ? 'Recarga de R\$ $valor realizada com sucesso!'
         : 'Débito de R\$ $valor realizado com sucesso!';

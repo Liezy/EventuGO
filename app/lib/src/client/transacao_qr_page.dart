@@ -26,7 +26,8 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
       setState(() {
         _qrData = jsonEncode({
           'value': double.tryParse(_valorController.text) ?? 0.0,
-          'type': _tipoTransacao.toLowerCase(), // Exemplo: "recarga" ou "débito"
+          'type':
+              _tipoTransacao.toLowerCase(), // Exemplo: "recarga" ou "débito"
           'hash': idTransacao, // ID da transação
           'currency': _eventoController.text, // Use o evento como identificador
         });
@@ -70,7 +71,8 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
                       ),
                       DropdownButtonFormField<String>(
                         value: _tipoTransacao,
-                        decoration: InputDecoration(labelText: 'Tipo de Transação'),
+                        decoration:
+                            InputDecoration(labelText: 'Tipo de Transação'),
                         items: <String>['Recarga', 'Débito']
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
@@ -104,7 +106,8 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
                 ),
               ),
               SizedBox(height: 20),
-              if (_qrData != null) // Exibe o QR Code apenas se os dados existirem
+              if (_qrData !=
+                  null) // Exibe o QR Code apenas se os dados existirem
                 Card(
                   elevation: 4,
                   child: Padding(
