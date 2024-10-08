@@ -1,0 +1,118 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% block title %} Register {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+      <!-- Table -->
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+        
+          <div class="card bg-secondary shadow border-0">
+            <div class="card-body px-lg-5 py-lg-5">
+              <h1 class="text-dark mb-4 text-center">Registrar</h1>
+              <div class="text-center text-muted mb-4">
+
+                {% if msg %}
+                  <small class="text-danger">{{ msg | safe }}</small>
+                {% else %}
+                  Insira suas credenciais
+                {% endif %}  
+              
+              </div>
+
+              {% if not success %}
+
+                <form method="POST">
+
+                  {% csrf_token %}
+            
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
+                      </div>
+                      {{ form.username }}  <!-- Renderizando o campo username -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.username.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-email-83"></i></span>
+                      </div>
+                      {{ form.email }}  <!-- Renderizando o campo email -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.email.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-id-badge"></i></span>  <!-- Ícone para o campo CPF -->
+                      </div>
+                      {{ form.cpf }}  <!-- Renderizando o campo CPF -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.cpf.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                      </div>
+                      {{ form.password1 }}  <!-- Renderizando o campo password1 -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.password1.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                      </div>
+                      {{ form.password2 }}  <!-- Renderizando o campo password2 -->
+                    </div>
+                  </div>
+                  <span class="text-danger">{{ form.password2.errors }}</span>
+
+                  <div class="row my-4">
+                    <div class="col-12">
+                      <div class="custom-control custom-control-alternative custom-checkbox">
+                        <input class="custom-control-input" id="customCheckRegister" type="checkbox">
+                        <label class="custom-control-label" for="customCheckRegister">
+                          <span class="text-muted">Eu concordo com a <a href="#!">Política de Privacidade</a></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary mt-4">Criar conta</button>
+                  </div>
+                </form>
+
+              {% endif %}  
+  
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-12 text-center">
+          <a href="{% url 'login' %}" class="text-light"><small>Já tem uma conta? Faça login</small></a>
+        </div>
+      </div>
+
+    </div>
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
