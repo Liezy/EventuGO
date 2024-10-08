@@ -9,12 +9,12 @@ class LoginForm(forms.Form):
         max_length=150,  # Limite de comprimento do nome de usuário
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Nome de usuário",
+                "placeholder": "Email",
                 "class": "form-control"
             }
         ),
         error_messages={
-            'required': 'Por favor, insira seu nome de usuário.',
+            'required': 'Por favor, insira seu Email.',
         }
     )
     password = forms.CharField(

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from .managers import CustomUserManager 
 
 class CustomUser(AbstractUser):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
@@ -24,6 +25,7 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'cpf']
+    objects = CustomUserManager()
 
 
     class Meta:

@@ -1,6 +1,10 @@
+from typing import Any
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm, SignUpForm
+from users.models import CustomUser
+from event.models import Transaction, Event
+from company.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.db import IntegrityError
@@ -8,10 +12,19 @@ from django.db import IntegrityError
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home/index.html'  # Template que será renderizado
     login_url = '/auth/login/' 
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
+        context['total_eventos'] = Event.objects.count()
+        context['total_transacoes'] = Transaction.objects.count()
+        context['total_usuarios'] = CustomUser.objects.count()
+        context['total_empresas'] = Company.objects.count()
+        context['transacoes'] = Transaction.objects.all() 
+        return context
 def login_view(request):
     form = LoginForm(request.POST or None)
-
+    user = CustomUser
     msg = None
 
     if request.method == "POST":
