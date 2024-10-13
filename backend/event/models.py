@@ -45,3 +45,48 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f'{self.type} - {self.value}'
+    
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    value = models.DecimalField(max_digits=10, decimal_places=2)
+    qtd_stock = models.PositiveIntegerField()  # estoque
+    is_active = models.BooleanField(default=True)  # ativo (sim/não)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'product'
+
+class Sale(models.Model):
+    TYPE_CHOICES = [
+        (0, 'Caixa'),
+        (1, 'Online'),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        (0, 'Não Pago'),
+        (1, 'Pago'),
+    ]
+    
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES)
+    done_at = models.DateTimeField(auto_now_add=True)  
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  
+
+    def __str__(self):
+        return f"Sale {self.id} - {self.get_type_display()}"
+
+    class Meta:
+        db_table = 'sale'
+
+class ProductSale(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField() 
+
+    def __str__(self):
+        return f"{self.quantity}x {self.product.name} (Sale ID: {self.sale.id})"
+
+    class Meta:
+        db_table = 'product_sale'
