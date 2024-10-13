@@ -4,13 +4,17 @@ from .models import CustomUser, LoginHistory
 from .serializers import UserSerializer, LoginHistorySerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated)
+    
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
@@ -40,3 +44,17 @@ class LoginView(TokenObtainPairView):
             }, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['email'] = user.email
+        # ...
+
+        return token
+    
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
