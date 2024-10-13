@@ -24,7 +24,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sale
-        fields = ['type', 'payment_status', 'done_at', 'user']
+        fields = ['type', 'payment_status', 'done_at', 'user', 'payment_method']
 
 class ProductSaleSerializer(serializers.ModelSerializer):
     class Meta:

@@ -34,7 +34,13 @@ class Balance(models.Model):
 class Transaction(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
     value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
-    type = models.CharField(max_length=50, verbose_name="Tipo")
+
+    TYPE_CHOICES = [
+        (0, 'Recarga'),
+        (1, 'Compra'),
+    ]
+
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, verbose_name="Tipo")
     hash = models.CharField(max_length=255, verbose_name="Hash")
     done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora de conclusão")
     currency = models.ForeignKey(Balance, on_delete=models.CASCADE, verbose_name="Valor")
@@ -69,9 +75,17 @@ class Sale(models.Model):
         (0, 'Não Pago'),
         (1, 'Pago'),
     ]
+    PAYMENT_METHOD_CHOICES = [
+        (0, 'Dinheiro'),
+        (1, 'Cartão de Crédito'),
+        (2, 'Cartão de Débito'),
+        (3, 'Pix'),
+        (4, 'Boleto'),
+    ]
     
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name="Tipo")
     payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, verbose_name="Status de Pagamento")
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, verbose_name="Método de Pagamento")
     done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Venda")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
