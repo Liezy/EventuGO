@@ -47,17 +47,18 @@ class Transaction(models.Model):
         return f'{self.type} - {self.value}'
     
 class Product(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-    value = models.DecimalField(max_digits=10, decimal_places=2)
-    qtd_stock = models.PositiveIntegerField()  # estoque
-    is_active = models.BooleanField(default=True)  # ativo (sim/não)
+    name = models.CharField(max_length=255, verbose_name="Nome")
+    description = models.TextField(null=True, blank=True, verbose_name="Descrição")
+    value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
+    qtd_stock = models.PositiveIntegerField(verbose_name="Quantidade em Estoque")  # estoque
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")  # ativo (sim/não)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        db_table = 'product'
+        verbose_name = "Produto"
+        verbose_name_plural = "Produtos"
 
 class Sale(models.Model):
     TYPE_CHOICES = [
@@ -69,24 +70,26 @@ class Sale(models.Model):
         (1, 'Pago'),
     ]
     
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES)
-    done_at = models.DateTimeField(auto_now_add=True)  
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name="Tipo")
+    payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, verbose_name="Status de Pagamento")
+    done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Venda")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
     def __str__(self):
-        return f"Sale {self.id} - {self.get_type_display()}"
+        return f"Venda {self.id} - {self.get_type_display()}"
 
     class Meta:
-        db_table = 'sale'
+        verbose_name = "Venda"
+        verbose_name_plural = "Vendas"
 
 class ProductSale(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField() 
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE, verbose_name="Venda")
+    quantity = models.PositiveIntegerField(verbose_name="Quantidade")
 
     def __str__(self):
-        return f"{self.quantity}x {self.product.name} (Sale ID: {self.sale.id})"
+        return f"{self.quantity}x {self.product.name} (Venda ID: {self.sale.id})"
 
     class Meta:
-        db_table = 'product_sale'
+        verbose_name = "Produto da Venda"
+        verbose_name_plural = "Produtos da Venda"
