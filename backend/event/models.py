@@ -86,6 +86,7 @@ class Sale(models.Model):
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name="Tipo")
     payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, verbose_name="Status de Pagamento")
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, verbose_name="Método de Pagamento", default=0)
+    where = models.CharField(max_length=255, verbose_name="Local da Venda", null=True, blank=True)
     done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Venda")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
