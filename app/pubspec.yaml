@@ -37,6 +37,8 @@ dependencies:
   mobile_scanner: ^5.2.3
   flutter_localizations:
     sdk: flutter
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2
 
 
 

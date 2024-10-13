@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/home_page.dart';
-import 'package:app/pages/cadastro_usuario_page.dart';
+import 'package:app/pages/auth/user_register_page.dart';
 import 'package:app/pages/manage_events/manage_events.dart';
 import 'package:app/pages/creditos_page.dart';
-import 'package:app/pages/transacao_qr_page.dart'; // Adicionei a importação da nova página
+import 'package:app/pages/transacao_qr_page.dart'; // Importa o gerador de qr code
 import 'package:app/pages/consulta_saldo_historico_page.dart';
 import 'package:app/pages/qr_code_scan.dart'; // Importa o scanner
+import 'package:app/pages/auth/login_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -34,6 +35,7 @@ class _MainPageState extends State<MainPage> {
           });
         },
         children: [
+          LoginPage(),
           HomePage(), // Exibe a HomePage
           CadastroUsuarioPage(), // Tela de Cadastro de Usuário
           ManageEventsPage(), // Tela de Cadastro de Evento
