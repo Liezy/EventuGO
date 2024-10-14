@@ -1,0 +1,59 @@
+{% extends 'layouts/base.html' %}
+
+
+<title>Lista de Eventos</title>
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+{% block content %}
+
+
+          </div>
+          <!-- Card stats -->
+          <div class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Eventos</h1>
+                <a href={% url "eventCreate"%} class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Criar Novo Evento
+                </a>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for event in events %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ event.type }}</h6>
+                            <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Início:</strong> {{ event.start_date|date:"d/m/Y H:i" }}</li>
+                            <li class="list-group-item"><strong>Término:</strong> {{ event.end_date|date:"d/m/Y H:i" }}</li>
+                            <li class="list-group-item"><strong>Empresa:</strong> {{ event.company.name }}</li>
+                        </ul>
+                        <div class="card-footer">
+                            <a href={%url 'eventEdit' event.pk %} class="btn btn-primary">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center">Nenhum evento encontrado.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+       
+      {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+
+{% endblock javascripts %}
