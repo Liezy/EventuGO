@@ -1,4 +1,6 @@
+import 'package:app/src/pages/auth/sign_in.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -6,15 +8,51 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  void _onQrCodeButtonPressed() {
+    // Aqui você pode adicionar a ação que deseja realizar ao pressionar o botão
+    print('Botão QR Code pressionado!');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Home'),
       ),
       body: Center(
-        child: Text('Bem-vindo à Home Page!', style: TextStyle(fontSize: 24)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              '../../assets/static/image.png', // Verifique este caminho
+              width: 150, // Largura da imagem
+              height: 150, // Altura da imagem
+            ),
+            SizedBox(height: 20), // Espaço entre a imagem e o texto
+            Text(
+              'Boas Vindas ao EventuGo!',
+              style: TextStyle(fontSize: 24),
+            ),
+          ],
+        ),
       ),
+      floatingActionButton: Container(
+        margin: EdgeInsets.only(
+            top: 100.0), // Margem inferior para empurrar o botão para cima
+        child: FloatingActionButton(
+          onPressed: _onQrCodeButtonPressed, // Chama a função ao pressionar
+          backgroundColor: Colors.white, // Cor de fundo do botão
+          foregroundColor: Colors.black, // Cor do ícone do botão
+          child: Icon(Icons.qr_code), // Ícone de QR code
+          shape: RoundedRectangleBorder(
+            // Define a forma como um círculo
+            borderRadius: BorderRadius.circular(30), // Raio do círculo
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation
+          .startTop, // Localização do botão flutuante
     );
   }
 }

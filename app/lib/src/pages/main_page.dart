@@ -1,12 +1,15 @@
+import 'package:app/src/pages/listagem_eventos.dart';
+import 'package:app/src/pages/perfil_usuario.dart';
 import 'package:flutter/material.dart';
 import 'package:app/src/pages/home_page.dart';
-import 'package:app/src/pages/auth/user_register_page.dart';
-import 'package:app/src/pages/manage_events/manage_events.dart';
-import 'package:app/src/pages/creditos_page.dart';
+import 'package:app/src/pages/auth/sign_up.dart';
+import 'package:app/src/pages/rotas_wip/manage_events/manage_events.dart';
+import 'package:app/src/pages/rotas_wip/creditos_page.dart';
 import 'package:app/src/pages/transacao_qr_page.dart'; // Importa o gerador de qr code
 import 'package:app/src/pages/consulta_saldo_historico_page.dart';
 import 'package:app/src/pages/qr_code_scan.dart'; // Importa o scanner
-import 'package:app/src/pages/auth/login_page.dart';
+import 'package:app/src/pages/auth/sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -24,6 +27,17 @@ class _MainPageState extends State<MainPage> {
     _pageController.jumpToPage(index);
   }
 
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_uid'); // Remove o UUID salvo
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+              SignInPage()), // Redireciona para a página de login
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,29 +50,61 @@ class _MainPageState extends State<MainPage> {
         },
         children: [
           HomePage(),
-          LoginPage(),
+          UserEventsPage(),
+          UserProfilePage(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Eventos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        height: 70, // Aumenta a altura do BottomNavigationBar
+        child: BottomNavigationBar(
+          backgroundColor: Colors.white, // Cor de fundo do BottomNavigationBar
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          selectedItemColor: Colors.purple[700],
+          unselectedItemColor: Colors.grey,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.event),
+              label: 'Eventos',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
+            ),
+          ],
+        ),
       ),
+      floatingActionButton: Container(
+        width: 100, // Define a largura do botão flutuante
+        height: 56, // Define a altura do botão flutuante
+        child: FloatingActionButton(
+          onPressed: _logout,
+          backgroundColor: Colors.red, // Cor de fundo do botão flutuante
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero, // Remove os cantos arredondados
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.exit_to_app,
+                  color: Colors.white), // Ícone de sair em branco
+              SizedBox(width: 5), // Espaçamento entre o ícone e o texto
+              Text(
+                'Sair',
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white), // Texto 'Sair' em branco
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.endTop, // Localização do botão flutuante
     );
   }
 }
