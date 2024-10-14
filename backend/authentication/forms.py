@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from users.models import CustomUser 
+from event.models import Event
+from company.models import Company
 from django.core.exceptions import ValidationError
 
 class LoginForm(forms.Form):
@@ -88,3 +90,30 @@ class SignUpForm(UserCreationForm):
         if CustomUser.objects.filter(cpf=cpf).exists():
             raise ValidationError('Esse CPF já está em uso.')
         return cpf
+    
+        
+class EventForm(forms.ModelForm):
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(), 
+        widget=forms.Select(attrs={'class': 'form-control'}),  
+        label='Empresa',  
+        empty_label="Selecione uma empresa",  
+        required=True  
+    )
+
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'type', 'start_date', 'end_date', 'company']
+        widgets = {
+            'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Descreva o evento...'}),
+        }
+        labels = {
+            'name': 'Nome do Evento',
+            'description': 'Descrição',
+            'type': 'Tipo',
+            'start_date': 'Data de Início',
+            'end_date': 'Data de Término',
+            'company': 'Empresa',
+        }
