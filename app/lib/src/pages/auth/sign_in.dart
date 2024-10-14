@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:app/src/pages/auth/sign_up.dart';
-import 'package:app/src/pages/home_page.dart';
+import 'package:app/src/pages/home/home_page.dart';
 import 'package:app/src/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -86,6 +86,11 @@ class SignInPage extends StatelessWidget {
               mainAxisAlignment:
                   MainAxisAlignment.center, // Alinhamento vertical
               children: [
+                Image.asset(
+                  '../../assets/static/image.png', // Verifique este caminho
+                  width: 150, // Largura da imagem
+                  height: 150, // Altura da imagem
+                ),
                 // Campo de email com validação
                 TextFormField(
                   controller: _emailController,

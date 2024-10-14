@@ -1,4 +1,5 @@
 import 'package:app/src/pages/auth/sign_in.dart';
+import 'package:app/src/pages/home/entrar_qrcode.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,6 +12,10 @@ class _HomePageState extends State<HomePage> {
   void _onQrCodeButtonPressed() {
     // Aqui você pode adicionar a ação que deseja realizar ao pressionar o botão
     print('Botão QR Code pressionado!');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EventEntryPage()),
+    );
   }
 
   @override

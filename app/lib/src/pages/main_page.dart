@@ -1,11 +1,11 @@
-import 'package:app/src/pages/listagem_eventos.dart';
-import 'package:app/src/pages/perfil_usuario.dart';
+import 'package:app/src/pages/events/listagem_eventos.dart';
+import 'package:app/src/pages/profile/perfil_usuario.dart';
 import 'package:flutter/material.dart';
-import 'package:app/src/pages/home_page.dart';
+import 'package:app/src/pages/home/home_page.dart';
 import 'package:app/src/pages/auth/sign_up.dart';
 import 'package:app/src/pages/rotas_wip/manage_events/manage_events.dart';
 import 'package:app/src/pages/rotas_wip/creditos_page.dart';
-import 'package:app/src/pages/transacao_qr_page.dart'; // Importa o gerador de qr code
+import 'package:app/src/pages/events/transacao_qr_page.dart'; // Importa o gerador de qr code
 import 'package:app/src/pages/consulta_saldo_historico_page.dart';
 import 'package:app/src/pages/qr_code_scan.dart'; // Importa o scanner
 import 'package:app/src/pages/auth/sign_in.dart';

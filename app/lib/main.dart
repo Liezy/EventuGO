@@ -1,9 +1,8 @@
-import 'package:app/src/pages/home_page.dart';
+import 'package:app/src/pages/home/home_page.dart';
 import 'package:app/src/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'src/pages/auth/sign_in.dart';
-import 'src/pages/home_page.dart'; // Importe sua página inicial
 
 void main() {
   runApp(MyApp());

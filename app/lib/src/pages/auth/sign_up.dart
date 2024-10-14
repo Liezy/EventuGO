@@ -100,6 +100,11 @@ class SignUpPage extends StatelessWidget {
         mainAxisAlignment:
             MainAxisAlignment.center, // Alinha verticalmente ao centro
         children: [
+          Image.asset(
+            '../../assets/static/image.png', // Verifique este caminho
+            width: 150, // Largura da imagem
+            height: 150, // Altura da imagem
+          ),
           TextFormField(
             controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
