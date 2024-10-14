@@ -1,4 +1,8 @@
-from typing import Any
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from company.models import Company
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm, SignUpForm, EventForm
@@ -9,21 +13,34 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, UpdateView, CreateView
 from django.db import IntegrityError
 from django.urls import reverse_lazy
+import json
 
 class HomeView(LoginRequiredMixin, TemplateView):
-    template_name = 'home/index.html'  # Template que será renderizado
-    login_url = '/auth/login/' 
+    template_name = 'home/index.html'
+    login_url = '/auth/login/'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context['total_eventos'] = Event.objects.count()
         context['total_transacoes'] = Transaction.objects.count()
         context['total_usuarios'] = CustomUser.objects.count()
         context['total_empresas'] = Company.objects.count()
-        context['transacoes'] = Transaction.objects.all() 
+        context['transacoes'] = Transaction.objects.all()[:5]  # Limit to 5 most recent transactions
         return context
-    
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        qr_data = data.get('qr_data')
+        
+        # Process the QR code data here
+        # For example, you might want to create a new transaction:
+        # Transaction.objects.create(qr_data=qr_data, user=request.user)
+        
+        return JsonResponse({'status': 'success', 'message': 'QR code processado com sucesso', 'data': qr_data})
     
     
 class EventView(LoginRequiredMixin, TemplateView):
@@ -34,6 +51,7 @@ class EventView(LoginRequiredMixin, TemplateView):
         
         context['events'] = Event.objects.all()
         return context
+    
 class EventEditView(LoginRequiredMixin, UpdateView):
     model = Event
     template_name = 'home/event_edit.html'
