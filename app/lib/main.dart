@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: [
         const Locale('pt', ''), // Suporte para o português
       ],
+      debugShowCheckedModeBanner: false,
     );
   }
 }

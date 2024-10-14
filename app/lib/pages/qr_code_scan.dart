@@ -9,13 +9,14 @@ class QrCodeScanPage extends StatefulWidget {
 }
 
 class _QrCodeScanPageState extends State<QrCodeScanPage> {
-  final String apiUrlSaldos = "http://127.0.0.1:8000/event/api/saldos/";
   final String apiUrlTransacoes = "http://127.0.0.1:8000/event/api/transacoes/";
+  final String apiUrlSaldos = "http://127.0.0.1:8000/event/api/saldos/";
+  final String defaultUuid = "fc54e943-6a14-42a1-8a92-096d415ff9a2";
 
   String? qrValue;
   String? tipoTransacao;
   double? valor;
-  String? evento;
+  String? eventoUuid;
   String? idTransacao;
 
   @override
@@ -28,14 +29,10 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
         children: [
           Expanded(
             child: MobileScanner(
-              onDetect: (BarcodeCapture barcodeCapture) {
-                final List<Barcode> barcodes = barcodeCapture.barcodes;
-                for (var barcode in barcodes) {
-                  if (barcode.rawValue != null) {
-                    final String code = barcode.rawValue!;
-                    print('QR Code detectado: $code');
-                    _processQrData(code);
-                  }
+              onDetect: (capture) {
+                final List<Barcode> barcodes = capture.barcodes;
+                for (final barcode in barcodes) {
+                  _processQrData(barcode.rawValue ?? '');
                 }
               },
             ),
@@ -52,8 +49,8 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
       try {
         Map<String, dynamic> qrData = jsonDecode(code);
         tipoTransacao = qrData['type'];
-        valor = qrData['value'] ?? 0.0;
-        evento = qrData['currency'] ?? "1c38e24c-32be-4194-9b3f-2d89e3e9448d";
+        valor = double.parse(qrData['value'].toString());
+        eventoUuid = isValidUUID(qrData['currency']) ? qrData['currency'] : defaultUuid;
         idTransacao = qrData['hash'];
         qrValue = code;
         print('Dados do QR Code processados: $qrData');
@@ -75,11 +72,11 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
                 style: TextStyle(fontSize: 18)),
             Text('Valor: R\$ ${valor?.toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 18)),
-            Text('ID do Evento: $evento', style: TextStyle(fontSize: 18)),
+            Text('UUID do Evento: $eventoUuid', style: TextStyle(fontSize: 18)),
             Text('ID da Transação: $idTransacao', style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _efetuarRecarga,
+              onPressed: _efetuarTransacao,
               child: Text('Efetuar Recarga'),
             ),
           ],
@@ -88,135 +85,134 @@ class _QrCodeScanPageState extends State<QrCodeScanPage> {
     );
   }
 
-  Future<void> _efetuarRecarga() async {
-    if (tipoTransacao != null && valor != null && evento != null && idTransacao != null) {
+  Future<void> _efetuarTransacao() async {
+    if (tipoTransacao != null && valor != null && eventoUuid != null && idTransacao != null) {
+      if (!isValidUUID(eventoUuid!)) {
+        _showErrorDialog(context, 'UUID inválido. Usando UUID padrão.');
+        eventoUuid = defaultUuid;
+      }
+
       try {
+        // Define o tipo de transação: 0 para Recarga, 1 para Débito
+        int transactionType = tipoTransacao?.toLowerCase() == 'recarga' ? 0 : 1;
         Map<String, dynamic> transacaoData = {
           "value": valor,
-          "type": tipoTransacao!.toLowerCase(),
+          "type": transactionType,
           "hash": idTransacao,
-          "currency": "1c38e24c-32be-4194-9b3f-2d89e3e9448d", // Valor padrão
+          "currency": eventoUuid,
         };
 
-        final response = await http.post(
+        final responseTransacao = await http.post(
           Uri.parse(apiUrlTransacoes),
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: {"Content-Type": "application/json"},
           body: jsonEncode(transacaoData),
         );
 
-        if (response.statusCode == 201) {
+        if (responseTransacao.statusCode == 201) {
           print('Transação registrada com sucesso.');
-          // Após registrar a transação, atualize o saldo
-          await _atualizarSaldo(evento!, valor!, '1c38e24c-32be-4194-9b3f-2d89e3e9448d', context);
+          await _atualizarSaldo(eventoUuid!, valor!, transactionType);
         } else {
-          print('Erro ao registrar a transação: ${response.body}');
-          _showErrorDialog(context, 'Erro ao registrar a transação.');
+          print('Erro ao registrar a transação: ${responseTransacao.body}');
+          _showErrorDialog(context, 'Erro ao registrar a transação: ${responseTransacao.body}');
         }
       } catch (e) {
         print('Erro: $e');
+        _showErrorDialog(context, 'Erro ao processar a transação: $e');
       }
     }
   }
 
-  Future<void> _atualizarSaldo(String evento, double valor, String uid, BuildContext context) async {
+  Future<void> _atualizarSaldo(String saldoUuid, double valorTransacao, int transactionType) async {
     try {
-      // Primeiro, obtenha o saldo atual
       final responseGet = await http.get(
-        Uri.parse("$apiUrlSaldos$uid/"),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        Uri.parse("$apiUrlSaldos$saldoUuid/"),
+        headers: {"Content-Type": "application/json"},
       );
 
       if (responseGet.statusCode == 200) {
         Map<String, dynamic> saldoData = jsonDecode(responseGet.body);
-        double saldoAtual = double.parse(saldoData['currency']);  // Valor atual do saldo
+        double saldoAtual = double.parse(saldoData['currency'].toString());
+        double novoSaldo = transactionType == 0 ? saldoAtual + valorTransacao : saldoAtual - valorTransacao;
 
-        // Agora, modifique o saldo dependendo do tipo de transação
-        if (tipoTransacao == 'recarga') {
-          saldoAtual += valor;  // Adiciona o valor ao saldo
-        } else if (tipoTransacao == 'debito') {
-          saldoAtual -= valor;  // Subtrai o valor do saldo
+        if (novoSaldo < 0) {
+          _showErrorDialog(context, 'Saldo insuficiente para realizar a transação.');
+          return;
         }
 
-        // Atualiza o saldo com o novo valor
         Map<String, dynamic> saldoAtualizado = {
-          "currency": saldoAtual.toString(),
+          "currency": novoSaldo.toString(),
         };
 
         final responsePatch = await http.patch(
-          Uri.parse("$apiUrlSaldos$uid/"),
-          headers: {
-            "Content-Type": "application/json",
-          },
+          Uri.parse("$apiUrlSaldos$saldoUuid/"),
+          headers: {"Content-Type": "application/json"},
           body: jsonEncode(saldoAtualizado),
         );
 
         if (responsePatch.statusCode == 200) {
           print('Saldo atualizado com sucesso.');
-          _showSuccessDialog(context, tipoTransacao!, valor);
+          _showSuccessDialog(context, transactionType, valorTransacao);
         } else {
           print('Erro ao atualizar o saldo: ${responsePatch.body}');
-          _showErrorDialog(context, 'Erro ao atualizar o saldo.');
+          _showErrorDialog(context, 'Erro ao atualizar o saldo: ${responsePatch.body}');
         }
       } else {
         print('Erro ao obter o saldo atual: ${responseGet.body}');
-        _showErrorDialog(context, 'Erro ao obter o saldo atual.');
+        _showErrorDialog(context, 'Erro ao obter o saldo atual: ${responseGet.body}');
       }
     } catch (e) {
       print('Erro: $e');
+      _showErrorDialog(context, 'Erro ao atualizar o saldo: $e');
     }
   }
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Erro'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: Text('Erro'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
-  void _showSuccessDialog(BuildContext context, String tipoTransacao, double valor) {
-    String message = tipoTransacao == 'recarga'
-        ? 'Recarga de R\$ $valor realizada com sucesso!'
-        : 'Débito de R\$ $valor realizado com sucesso!';
+  void _showSuccessDialog(BuildContext context, int transactionType, double valor) {
+    String message = transactionType == 0
+        ? 'Recarga de R\$ ${valor.toStringAsFixed(2)} realizada com sucesso!'
+        : 'Débito de R\$ ${valor.toStringAsFixed(2)} realizado com sucesso!';
 
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Transação Concluída'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: Text('Transação Concluída'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
     );
+  }
+
+  bool isValidUUID(String uuid) {
+    RegExp uuidRegExp = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+      caseSensitive: false,
+    );
+    return uuidRegExp.hasMatch(uuid);
   }
 }
 
 extension StringExtension on String {
   String capitalizeFirst() {
-    return this.length > 0 ? this[0].toUpperCase() + this.substring(1) : this;
+    return this.isNotEmpty ? '${this[0].toUpperCase()}${this.substring(1)}' : '';
   }
 }
