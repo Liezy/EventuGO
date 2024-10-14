@@ -4,7 +4,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from users.views import MyTokenObtainPairView
 from django.shortcuts import redirect
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('event/', include('event.urls')),

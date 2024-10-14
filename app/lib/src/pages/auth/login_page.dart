@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-
 class LoginPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
@@ -13,6 +12,7 @@ class LoginPage extends StatelessWidget {
     final String senha = _senhaController.text;
 
     final url = Uri.parse('http://127.0.0.1:8000/token/');
+    // final url = Uri.parse('http://10.0.2.2:8000/token/');
 
     final response = await http.post(
       url,
