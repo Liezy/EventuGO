@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             Image.asset(
               '../../assets/static/image.png', // Verifique este caminho
-              width: 150, // Largura da imagem
-              height: 150, // Altura da imagem
+              width: 300, // Largura da imagem
+              height: 300, // Altura da imagem
             ),
             SizedBox(height: 20), // Espaço entre a imagem e o texto
             Text(
