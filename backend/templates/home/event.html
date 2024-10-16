@@ -1,59 +1,77 @@
 {% extends 'layouts/base.html' %}
 
-
 <title>Lista de Eventos</title>
+
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
+
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
 {% block content %}
 
+<div class="container mt-4">
 
-          </div>
-          <!-- Card stats -->
-          <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>Eventos</h1>
-                <a href={% url "eventCreate"%} class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-2"></i>Criar Novo Evento
-                </a>
-            </div>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for event in events %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ event.name }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">{{ event.type }}</h6>
-                            <p class="card-text">{{ event.description|truncatewords:20 }}</p>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><strong>Início:</strong> {{ event.start_date|date:"d/m/Y H:i" }}</li>
-                            <li class="list-group-item"><strong>Término:</strong> {{ event.end_date|date:"d/m/Y H:i" }}</li>
-                            <li class="list-group-item"><strong>Empresa:</strong> {{ event.company.name }}</li>
-                        </ul>
-                        <div class="card-footer">
-                            <a href={%url 'eventEdit' event.pk %} class="btn btn-primary">Ver detalhes</a>
-                        </div>
-                    </div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h1 class="mb-3">Eventos</h1>
+        <a href="{% url 'eventCreate' %}" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle me-2"></i>Criar Novo Evento
+        </a>
+    </div>
+
+    <!-- GIF com a mensagem piscando -->
+    <div style="position: absolute; top: 120px; right: 20px; z-index: 3;">
+        <img src="/static/assets/img/build.gif" alt="GIF animado" style="max-width: 300px; max-height: 200px; border-radius: 10px;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); animation: blink 1s infinite;">
+            EM CONSTRUÇÃO
+        </div>
+    </div>
+
+    <!-- Estilo para piscar o texto -->
+    <style>
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+    </style>
+
+    <!-- Cards de eventos -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for event in events %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ event.type }}</h6>
+                    <p class="card-text">{{ event.description|truncatewords:20 }}</p>
                 </div>
-                {% empty %}
-                <div class="col-12">
-                    <p class="text-center">Nenhum evento encontrado.</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Início:</strong> {{ event.start_date|date:"d/m/Y H:i" }}</li>
+                    <li class="list-group-item"><strong>Término:</strong> {{ event.end_date|date:"d/m/Y H:i" }}</li>
+                    <li class="list-group-item"><strong>Empresa:</strong> {{ event.company.name }}</li>
+                </ul>
+                <div class="card-footer">
+                    <a href="{% url 'eventEdit' event.pk %}" class="btn btn-primary">Ver detalhes</a>
                 </div>
-                {% endfor %}
             </div>
         </div>
-       
-      {% include "includes/footer.html" %}
-
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center">Nenhum evento encontrado.</p>
+        </div>
+        {% endfor %}
     </div>
+
+</div>
+
+{% include "includes/footer.html" %}
 
 {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
+<!-- Specific JS goes HERE -->
 {% block javascripts %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
-  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
 {% endblock javascripts %}

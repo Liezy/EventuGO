@@ -1,0 +1,197 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Perfil {% endblock title %}
+
+{% block content %}
+
+<div id="header-background" class="header pb-6 d-flex align-items-center" style="min-height: 500px; position: relative; overflow: hidden;">
+  <canvas id="starry-sky" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+  <div style="position: absolute; top: 20px; right: 20px; z-index: 3;">
+    <img src="/static/assets/img/tenor.gif" alt="GIF animado" style="max-width: 300px; max-height: 200px; border-radius: 10px;">
+  </div>
+  <div class="container-fluid d-flex align-items-center" style="position: relative; z-index: 2;">
+    <div class="row">
+      <div class="col-lg-7 col-md-10">
+        <h1 class="display-2 text-white">Olá, {{ user.first_name }}</h1>
+        <p class="text-white mt-0 mb-5">Esta é a sua página de perfil. Aqui você pode visualizar e editar suas informações pessoais.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-4 order-xl-2">
+      <div class="card card-profile">
+        <img id="card-cover" src="{{ card_cover_aleatoria }}" alt="Imagem de capa" class="card-img-top">
+        <div class="row justify-content-center">
+          <div class="col-lg-3 order-lg-2">
+            <div class="card-profile-image">
+              <a href="#">    
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          <div class="text-center">
+            <h5 class="h3 mt-4">
+              {{ user.first_name }} {{ user.last_name }}
+            </h5>
+            <div class="h5 font-weight-300">
+              {{ user.email }}
+            </div>
+            <div class="h5 mt-4">
+              <i class="ni business_briefcase-24 mr-2"></i>{{ user.get_user_type_display }}
+            </div>
+            <div>
+              <i class="ni education_hat mr-2"></i>Membro desde {{ user.created_at|date:"d/m/Y" }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-8 order-xl-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-8">
+              <h3 class="mb-0">Editar perfil</h3>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <h6 class="heading-small text-muted mb-4">Informações do usuário</h6>
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.first_name.id_for_label }}">Nome</label>
+                    {{ form.first_name }}
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.last_name.id_for_label }}">Sobrenome</label>
+                    {{ form.last_name }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.email.id_for_label }}">E-mail</label>
+                    {{ form.email }}
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.phone.id_for_label }}">Telefone</label>
+                    {{ form.phone }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr class="my-4" />
+            <h6 class="heading-small text-muted mb-4">Informações de contato</h6>
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.address.id_for_label }}">Endereço</label>
+                    {{ form.address }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="{{ form.birth_date.id_for_label }}">Data de Nascimento</label>
+                    {{ form.birth_date }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary mt-4">Salvar alterações</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+  // Adicione classes Bootstrap aos campos do formulário
+  document.addEventListener('DOMContentLoaded', function() {
+    var formInputs = document.querySelectorAll('form input, form textarea');
+    formInputs.forEach(function(input) {
+      input.classList.add('form-control');
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('starry-sky');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+  
+    function resizeCanvas() {
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    }
+  
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  
+    const stars = [];
+    const starCount = 100;
+    const maxStarSize = 2;
+  
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * maxStarSize,
+        speed: 1 + Math.random() * 3
+      });
+    }
+  
+    function drawStars() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = 'rgb(0, 51, 102)'; // Cor azul oceano
+      ctx.fillRect(0, 0, width, height);
+      
+      stars.forEach(star => {
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + (star.size / maxStarSize) + ')';
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+  
+        star.y += star.speed;
+        if (star.y > height) {
+          star.y = 0;
+          star.x = Math.random() * width;
+        }
+      });
+    }
+  
+    function animate() {
+      drawStars();
+      requestAnimationFrame(animate);
+    }
+  
+    animate();
+  
+    // Resto do seu código JavaScript aqui
+  });
+  </script>
+{% endblock javascripts %}

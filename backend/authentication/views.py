@@ -12,8 +12,10 @@ from company.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, UpdateView, CreateView
 from django.db import IntegrityError
+from django.contrib import messages
 from django.urls import reverse_lazy
 import json
+import random
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home/index.html'
@@ -130,3 +132,28 @@ def register_user(request):
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
 
+class PerfilView(LoginRequiredMixin, UpdateView):
+    model = CustomUser
+    template_name = 'home/perfil.html'
+    fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'birth_date']
+    success_url = reverse_lazy('perfil')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Lista de capas de card disponíveis
+        card_covers = [
+            '/static/assets/img/theme/oPai.png',
+            '/static/assets/img/theme/dog.png',
+            '/static/assets/img/theme/eli.png',
+            '/static/assets/img/theme/muri.png',
+            '/static/assets/img/theme/icar.png',
+        ]
+        context['card_cover_aleatoria'] = random.choice(card_covers)
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Perfil atualizado com sucesso!')
+        return super().form_valid(form)
