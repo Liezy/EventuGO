@@ -1,5 +1,7 @@
 # Eventugo - Sistema de Gerenciamento de Créditos para Eventos
 
+Author: [Eliezer](https://github.com/Liezy) 25/08/2024
+
 ## Índice
 
 - [Eventugo - Sistema de Gerenciamento de Créditos para Eventos](#eventugo---sistema-de-gerenciamento-de-créditos-para-eventos)
@@ -7,7 +9,6 @@
   - [Cabeçalho](#cabeçalho)
   - [Descrição do Projeto](#descrição-do-projeto)
   - [Sprints](#sprints)
-  - [Planejamento](#planejamento)
   - [Modelo Arquitetural](#modelo-arquitetural)
   - [MVP - Minimun Viable Product](#mvp---minimun-viable-product)
   - [User Stories](#user-stories)
@@ -34,9 +35,7 @@
 O Eventugo é uma solução desenvolvida para facilitar a gestão de créditos em eventos, substituindo as tradicionais comandas físicas por um sistema digital. O projeto visa criar uma experiência mais conveniente e segura para os participantes, que poderão recarregar e utilizar seus créditos por meio de um aplicativo móvel. O sistema permite a realização de transações utilizando QR codes, com visualização de saldo em tempo real e acompanhamento do histórico de transações.
 
 ## Sprints
-
-## Planejamento
-Acesse o planejamento do projeto [aqui.](https://alluring-sail-8e9.notion.site/Planejamento-das-Sprints-fffca21a82e280b89075d5bef259910e?pvs=4)
+Acesse o planejamento das sprints [aqui.](https://alluring-sail-8e9.notion.site/Sprints-fffca21a82e280b89075d5bef259910e?pvs=4)
 
 ## Modelo Arquitetural
 Acesse o modelo arquitetural do projeto [aqui.](https://github.com/user-attachments/files/16748555/Modelo.Arquitetural.pdf)
@@ -45,7 +44,6 @@ Acesse o modelo arquitetural do projeto [aqui.](https://github.com/user-attachme
 Acesse o MVP [aqui.](https://alluring-sail-8e9.notion.site/Defini-o-do-MVP-a0464e5c8f5444a0993eddd301fc9ce1?pvs=4)
 
 ## User Stories
-
 Acesse o detalhamento das User Stories [aqui.](https://alluring-sail-8e9.notion.site/Detalhamento-das-User-Stories-60e8092f3edc454ea815fc32a8bf64ba?pvs=4)
 
 ## Protótipo
@@ -55,7 +53,9 @@ Acesse a prototipação do projeto [aqui.](https://www.figma.com/design/oF9N9hW6
 Acesse a documentacao de requisitos [aqui.](https://www.notion.so/Requisitos-19410764685341c2ae18efe3d066648a?pvs=4)
 
 
-# Rodando o Projeto
+# Rodando o Projeto 
+
+Author: [Ícaro](https://github.com/icarompo) 16/09/2024
 
 ## Django/Backend
 
