@@ -78,7 +78,7 @@ class SignInPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(
-            horizontal: 128.0), // Padding nas laterais
+            horizontal: 100.0), // Padding nas laterais
         child: Center(
           child: Form(
             key: _formKey,
