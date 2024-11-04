@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-<title>Lista de Eventos</title>
+<title>Lista de Empresas</title>
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -13,9 +13,9 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h1 class="mb-3">Eventos</h1>
-        <a href="{% url 'eventCreate' %}" class="btn btn-primary mb-3">
-            <i class="bi bi-plus-circle me-2"></i>Criar Novo Evento
+        <h1 class="mb-3">Empresas</h1>
+        <a href="{% url 'companyCreate' %}" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle me-2"></i>Criar Nova Empresa
         </a>
     </div>
 
@@ -29,6 +29,7 @@
     </div>
 -->
 
+
     <!-- Estilo para piscar o texto -->
     <style>
     @keyframes blink {
@@ -38,36 +39,34 @@
     }
     </style>
 
-    <!-- Cards de eventos -->
+    <!-- Cards de empresas -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for event in events %}
+        {% for company in companies %}
         <div class="col">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">{{ event.name }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ event.type }}</h6>
-                    <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                    <h5 class="card-title">{{ company.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">CNPJ: {{ company.cnpj }}</h6>
+                    <p class="card-text">
+                        <a href="{{ company.ico_url }}" target="_blank">Ícone da Empresa</a>
+                    </p>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Início:</strong> {{ event.start_date|date:"d/m/Y H:i" }}</li>
-                    <li class="list-group-item"><strong>Término:</strong> {{ event.end_date|date:"d/m/Y H:i" }}</li>
-                    <li class="list-group-item"><strong>Empresa:</strong> {{ event.company.name }}</li>
+                    <li class="list-group-item"><strong>Data de Criação:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</li>
                 </ul>
                 <div class="card-footer">
-                    <a href="{% url 'eventEdit' event.pk %}" class="btn btn-primary">Ver detalhes</a>
+                    <a href="{% url 'companyEdit' company.pk %}" class="btn btn-primary">Ver detalhes</a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
-            <p class="text-center">Nenhum evento encontrado.</p>
+            <p class="text-center">Nenhuma Empresa encontrada.</p>
         </div>
         {% endfor %}
     </div>
 
 </div>
-
-
 
 {% endblock content %}
 

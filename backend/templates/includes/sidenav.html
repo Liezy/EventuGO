@@ -31,6 +31,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href={% url 'company' %}>
+              <i class="fas fa-building text-default"></i>
+              <span class="nav-link-text">Empresa</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">
                 <i class="ni ni-user-run text-red"></i>
                 <span class="nav-link-text">Sair</span>

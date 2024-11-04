@@ -117,3 +117,18 @@ class EventForm(forms.ModelForm):
             'end_date': 'Data de Término',
             'company': 'Empresa',
         }
+        
+class CompanyForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = ['name', 'ico_url', 'cnpj']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome da Empresa'}),
+            'ico_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'URL do Ícone'}),
+            'cnpj': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CNPJ'}),
+        }
+        labels = {
+            'name': 'Nome da Empresa',
+            'ico_url': 'Ícone URL',
+            'cnpj': 'CNPJ',
+        }
