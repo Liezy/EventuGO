@@ -35,24 +35,18 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         qr_data = data.get('qr_data')
-        value = data.get('value')  # Valor da recarga
-        event_id = data.get('event_id')  # ID do evento associado
+        balance_id = data.get('balance_id')  # ID do Balance associado
 
         # Processa o QR code se ele estiver presente
         if qr_data:
-            # Aqui você pode processar os dados do QR code conforme necessário
-            # Exemplo: criar uma nova transação baseada nos dados do QR
-            return JsonResponse({'status': 'success', 'message': 'QR code processado com sucesso', 'data': qr_data})
-
-        # Processa a recarga se o valor e o ID do evento forem fornecidos
-        if value and event_id:
             try:
-                # Obtém a instância de Balance associada ao usuário e ao evento
-                balance = Balance.objects.get(user=request.user, event_id=event_id)
+                # Aqui você pode processar os dados do QR code conforme necessário
+                # Se o QR code contém o ID do balance, você pode processar a recarga
+                balance = Balance.objects.get(uid=balance_id, user=request.user)
 
                 # Cria a transação de recarga
                 transaction = Transaction.objects.create(
-                    value=value,
+                    value=balance.currency,  # Ou outro valor se necessário
                     type=0,  # 0 representa 'Recarga'
                     hash=uuid.uuid4().hex,  # Um hash único para a transação
                     currency=balance
