@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'transacao_qr_page.dart'; // Certifique-se de que o caminho esteja correto
+import 'package:app/src/pages/events/products/listagem_produtos.dart'; // Novo import para a página de lista de produtos
+import 'package:app/src/pages/events/products/cart_page.dart'; // Import da página do carrinho
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,14 +52,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
     if (saldoResponse.statusCode == 200) {
       List<dynamic> saldos = jsonDecode(saldoResponse.body);
 
-      // Encontrar o saldo do evento com base no `eventId` e `userUid`
       var saldo = saldos.firstWhere(
           (s) => s['event'] == widget.eventId && s['user'] == userUid,
           orElse: () => null);
 
       if (saldo != null) {
         setState(() {
-          _saldo = saldo['currency']; // Busca o campo 'currency' do saldo
+          _saldo = saldo['currency'];
         });
       } else {
         print('Saldo não encontrado para este evento e usuário.');
@@ -86,7 +87,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Placeholder da foto do evento
                       Container(
                         width: 100,
                         height: 100,
@@ -97,7 +97,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         child: Icon(Icons.event, size: 50),
                       ),
                       SizedBox(height: 20),
-                      // Nome do evento
                       Text(
                         _eventData['name'] ?? 'Nome do evento não disponível',
                         style: TextStyle(
@@ -106,7 +105,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         ),
                       ),
                       SizedBox(height: 10),
-                      // Descrição do evento
                       Text(
                         _eventData['description'] ??
                             'Descrição do evento não disponível',
@@ -117,7 +115,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         ),
                       ),
                       SizedBox(height: 30),
-                      // Saldo do usuário no evento
                       Text(
                         _saldo != null
                             ? 'Saldo: $_saldo'
@@ -129,13 +126,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         ),
                       ),
                       SizedBox(height: 30),
-                      // Botões de ações
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildActionButton(Icons.history, 'Histórico'),
                           _buildActionButton(Icons.attach_money, 'Recarga'),
-                          _buildActionButton(Icons.shopping_cart, 'Comprar'),
+                          _buildActionButton(Icons.shopping_cart, 'Carrinho'),
+                          _buildActionButton(Icons.list, 'Produtos'), // Novo botão
                         ],
                       ),
                     ],
@@ -151,13 +148,20 @@ class _EventDetailPageState extends State<EventDetailPage> {
           icon: Icon(icon, size: 40),
           onPressed: () {
             if (label == 'Recarga') {
-              // Navega para TransacaoQrPage
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => TransacaoQrPage()),
               );
-            } else {
-              // Outras ações
+            } else if (label == 'Carrinho') { // Navega para a página do carrinho
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CartPage()),
+              );
+            } else if (label == 'Produtos') { // Navega para a lista de produtos
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProductListPage()),
+              );
             }
           },
         ),
