@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TransacaoQrPage extends StatefulWidget {
   @override
@@ -10,28 +12,73 @@ class TransacaoQrPage extends StatefulWidget {
 class _TransacaoQrPageState extends State<TransacaoQrPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _valorController = TextEditingController();
-  final TextEditingController _eventoController = TextEditingController();
-  String _tipoTransacao = 'Recarga'; // Valor padrão
-  String? _qrData; // Variável para armazenar os dados do QR Code
+  String? _qrData; // Dados para o QR Code
+  String? _idCarteira;
+  FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
 
-  // Método para gerar o ID da transação
-  String _gerarIdTransacao() {
-    return DateTime.now().millisecondsSinceEpoch.toString();
+  @override
+  void initState() {
+    super.initState();
+    _fetchIdCarteira();
+    _initializeNotifications();
   }
 
-  // Método para gerar os dados do QR Code
+  // Inicializa as notificações locais
+  Future<void> _initializeNotifications() async {
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon'); // Defina o ícone do app
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    await _flutterLocalNotificationsPlugin!.initialize(initializationSettings);
+  }
+
+  // Envia a notificação de recarga bem-sucedida
+  Future<void> _showSuccessNotification() async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'recarga_channel', // ID do canal
+      'Recarga', // Nome do canal
+      channelDescription: 'Notificações de recarga',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await _flutterLocalNotificationsPlugin!.show(
+      0, // ID da notificação
+      'Recarga Realizada', // Título
+      'Sua recarga foi realizada com sucesso!', // Corpo
+      notificationDetails,
+    );
+  }
+
+  // Método para buscar o id da carteira em shared preferences
+  Future<void> _fetchIdCarteira() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _idCarteira = prefs.getString(
+          'user_uid'); // Certifique-se de que user_uid é o id correto
+    });
+  }
+
+  // Método para gerar os dados do QR Code e enviar notificação
   void _gerarQRCode() {
-    if (_formKey.currentState!.validate()) {
-      String idTransacao = _gerarIdTransacao();
+    if (_formKey.currentState!.validate() && _idCarteira != null) {
       setState(() {
         _qrData = jsonEncode({
-          'value': double.tryParse(_valorController.text) ?? 0.0,
-          'type':
-              _tipoTransacao.toLowerCase(), // Exemplo: "recarga" ou "débito"
-          'hash': idTransacao, // ID da transação
-          'currency': _eventoController.text, // Use o evento como identificador
+          'id_carteira': _idCarteira!,
+          'valor_recarga': double.tryParse(_valorController.text) ?? 0.0,
         });
       });
+      _showSuccessNotification(); // Envia a notificação após a geração do QR Code
+    } else {
+      print("ID da carteira não encontrado");
     }
   }
 
@@ -42,67 +89,43 @@ class _TransacaoQrPageState extends State<TransacaoQrPage> {
         title: Text('Realizar Recarga'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextFormField(
-                        controller: _valorController,
-                        decoration: InputDecoration(labelText: 'Valor'),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira um valor';
-                          }
-                          return null;
-                        },
-                      ),
-                      DropdownButtonFormField<String>(
-                        value: _tipoTransacao,
-                        decoration:
-                            InputDecoration(labelText: 'Tipo de Transação'),
-                        items: <String>['Recarga']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _tipoTransacao = newValue!;
-                          });
-                        },
-                      ),
-                      TextFormField(
-                        controller: _eventoController,
-                        decoration: InputDecoration(labelText: 'ID do Evento'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira o ID do evento';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _valorController,
+                      decoration:
+                          InputDecoration(labelText: 'Valor para Recarga'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira um valor';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton.icon(
                         onPressed: _gerarQRCode,
-                        child: Text('Gerar QR Code'),
+                        icon: Icon(
+                            Icons.attach_money), // Ícone de adição de dinheiro
+                        label: Text('Gerar QR Code'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          textStyle: TextStyle(fontSize: 16),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 20),

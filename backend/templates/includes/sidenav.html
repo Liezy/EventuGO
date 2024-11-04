@@ -19,7 +19,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href=#>
+            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href={% url 'perfil'%}>
               <i class="ni ni-single-02 text-yellow"></i>
               <span class="nav-link-text">Perfil</span>
             </a>
@@ -28,6 +28,12 @@
             <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href={% url 'eventos' %}>
               <i class="ni ni-bullet-list-67 text-default"></i>
               <span class="nav-link-text">Eventos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href={% url 'company' %}>
+              <i class="fas fa-building text-default"></i>
+              <span class="nav-link-text">Empresa</span>
             </a>
           </li>
           <li class="nav-item">

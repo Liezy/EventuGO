@@ -29,6 +29,7 @@ class CustomUser(AbstractUser):
     
     # Se o username não for utilizado, pode ser definido como null e vazio
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
+    objects = CustomUserManager()
 
     class Meta:
         verbose_name = "Usuário"
