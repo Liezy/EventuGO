@@ -40,7 +40,8 @@ class Transaction(models.Model):
         (1, 'Compra'),
     ]
 
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES, verbose_name="Tipo")
+    # type = models.CharField(max_length=50, choices=TYPE_CHOICES, verbose_name="Tipo")
+    type = models.PositiveIntegerField(choices=TYPE_CHOICES, default=0)
     hash = models.CharField(max_length=255, verbose_name="Hash")
     done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora de conclusão")
     currency = models.ForeignKey(Balance, on_delete=models.CASCADE, verbose_name="Valor")
