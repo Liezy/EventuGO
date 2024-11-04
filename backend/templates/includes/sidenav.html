@@ -1,0 +1,44 @@
+<nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+  <div class="scrollbar-inner">
+    <!-- Brand -->
+    <div class="sidenav-header align-items-center" style="margin: 20px;">
+      <a class="navbar-brand" href="/">
+        <img src="/static/assets/img/brand/blue.png" class="navbar-brand-img img-fluid" style="transform: scale(5); alt="Eventu Template Logo" ">
+      </a>
+    </div>
+    
+    <div class="navbar-inner">
+      <!-- Collapse -->
+      <div class="collapse navbar-collapse" id="sidenav-collapse-main">
+        <!-- Nav items -->
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link {% if 'index' in segment %} active {% endif %}" href={% url 'home' %}>
+              <i class="ni ni-tv-2 text-primary"></i>
+              <span class="nav-link-text">Home</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href=#>
+              <i class="ni ni-single-02 text-yellow"></i>
+              <span class="nav-link-text">Perfil</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href={% url 'eventos' %}>
+              <i class="ni ni-bullet-list-67 text-default"></i>
+              <span class="nav-link-text">Eventos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">
+                <i class="ni ni-user-run text-red"></i>
+                <span class="nav-link-text">Sair</span>
+            </a>
+        </li>                  
+        </ul>
+     
+      </div>
+    </div>
+  </div>
+</nav>

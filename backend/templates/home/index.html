@@ -1,0 +1,275 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block stylesheets %}
+{{ block.super }}
+<style>
+  #qr-reader {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  #floatingCard {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  #closeCard {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+  <!-- Header -->
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-lg-6 col-7">
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="#">Páginas</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+        <!-- Card stats -->
+        <div class="row">
+          <!-- Total Eventos Card -->
+          <div class="col-xl-3 col-md-6">
+            <div class="card card-stats">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col">
+                    <h5 class="card-title text-uppercase text-muted mb-0">Total Eventos</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_eventos }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                      <i class="ni ni-active-40"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Usuários Card -->
+          <div class="col-xl-3 col-md-6">
+            <div class="card card-stats">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col">
+                    <h5 class="card-title text-uppercase text-muted mb-0">Usuários</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_usuarios }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                      <i class="ni ni-chart-pie-35"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Transações Card -->
+          <div class="col-xl-3 col-md-6">
+            <div class="card card-stats">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col">
+                    <h5 class="card-title text-uppercase text-muted mb-0">Transações</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_transacoes }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                      <i class="ni ni-money-coins"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Total lojas Card -->
+          <div class="col-xl-3 col-md-6">
+            <div class="card card-stats">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col">
+                    <h5 class="card-title text-uppercase text-muted mb-0">Total Lojas</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_empresas }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                      <i class="ni ni-chart-bar-32"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col-xl-8">
+        <div class="card bg-default">
+          <div class="card-header bg-transparent">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="h3 text-white mb-0">Escanear QR Code</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="qr-reader"></div>
+            <div class="mt-3">
+              <button id="startButton" class="btn btn-primary mr-2">Iniciar Scanner</button>
+              <button id="stopButton" class="btn btn-danger" style="display: none;">Parar Scanner</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico de Transações -->
+      <div class="col-xl-4">
+        <div class="card">
+          <div class="card-header bg-transparent">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
+                <h5 class="h3 mb-0">Histórico de Transações</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <ul>
+              {% for transacaos in transacoes %}
+                <li>
+                  <strong>Tipo:</strong> {{ transacaos.type }} <br>
+                  <strong>Valor:</strong> R$ {{ transacaos.value }} <br>
+                  <strong>Data:</strong> {{ transacaos.done_at }} <br>
+                </li>
+              {% empty %}
+                <p>Nenhuma transação encontrada.</p>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card flutuante para exibir informações escaneadas -->
+    <div id="floatingCard">
+      <span id="closeCard">&times;</span>
+      <h3>Informações Escaneadas</h3>
+      <p id="scannedInfo"></p>
+    </div>
+
+    {% include "includes/footer.html" %}
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+{{ block.super }}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
+  
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      console.log(`QR Code detected: ${decodedText}`);
+      displayScannedInfo(decodedText);
+      stopScanner();
+    };
+  
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+  
+    function startScanner() {
+      html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+        .then(() => {
+          startButton.style.display = 'none';
+          stopButton.style.display = 'inline-block';
+        })
+        .catch((err) => {
+          console.error(`Erro ao iniciar o scanner: ${err}`);
+        });
+    }
+  
+    function stopScanner() {
+      html5QrCode.stop().then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+      }).catch((err) => {
+        console.error(`Erro ao parar o scanner: ${err}`);
+      });
+    }
+  
+    startButton.onclick = startScanner;
+    stopButton.onclick = stopScanner;
+  
+    function displayScannedInfo(info) {
+      document.getElementById('scannedInfo').textContent = info;
+      document.getElementById('floatingCard').style.display = 'block';
+  
+      // Enviar dados para o backend
+      fetch('', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({qr_data: info})
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        // Atualizar a interface do usuário com a resposta, se necessário
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+    }
+  
+    document.getElementById('closeCard').onclick = function() {
+      document.getElementById('floatingCard').style.display = 'none';
+    };
+  
+    // Função para obter o token CSRF
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+  </script>
+{% endblock javascripts %}
