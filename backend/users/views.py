@@ -1,15 +1,15 @@
 from rest_framework import viewsets, status
 from django.contrib.auth import get_user_model
 from .models import CustomUser, LoginHistory
-from .serializers import UserSerializer, LoginHistorySerializer
+from .serializers import UserSerializer, LoginHistorySerializer, MyTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from django.contrib.auth.views import LoginView
 from django.contrib import messages
-
+from rest_framework import permissions
+from rest_framework.views import APIView
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'  # Template para renderizar o formulário de login
@@ -66,16 +66,25 @@ class LoginView(TokenObtainPairView):
         else:
             return Response({'detail': 'Usuário ou senha incorretos'}, status=status.HTTP_401_UNAUTHORIZED)
         
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
 
-        # Add custom claims
-        token['email'] = user.email
-        # ...
-
-        return token
-    
-class MyTokenObtainPairView(TokenObtainPairView):
+# View para o login com JWT (personalizada com o serializer)
+class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+# View para o refresh token (já fornecido pelo SimpleJWT)
+class CustomTokenRefreshView(TokenRefreshView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+class CurrentUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.is_authenticated:
+            # Se o usuário estiver autenticado, retornamos os dados dele
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            # Caso contrário, retornamos uma resposta de erro ou dados fictícios
+            return Response({"detail": "Usuário não autenticado"}, status=401)

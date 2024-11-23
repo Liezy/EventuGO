@@ -2,7 +2,24 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from .models import CustomUser, LoginHistory
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, CustomUser):
+        # Obtém o token padrão
+        token = super().get_token(CustomUser)
+
+        # Adiciona claims customizadas
+        token['email'] = CustomUser.email
+        token['user_uid'] = str(CustomUser.uid)
+        token['first_name'] = CustomUser.first_name
+        token['last_name'] = CustomUser.last_name
+        token['user_type'] = CustomUser.user_type
+        return token
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
