@@ -18,7 +18,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   List<dynamic> _produtos = [];
   String? _saldo;
   bool _isLoading = true;
-
+  int? _selectedProductId;
   @override
   void initState() {
     super.initState();
@@ -211,28 +211,97 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Widget _buildProdutoCard(dynamic produto) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shopping_bag, size: 50, color: Colors.blue),
-            SizedBox(height: 10),
-            Text(
-              produto['name'] ?? 'Nome indisponível',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 5),
-            Text(
-              'Preço: R\$ ${produto['price']?.toStringAsFixed(2) ?? '0.00'}',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+    return GestureDetector(
+      onTap: () async {
+        // Inicia o efeito de piscar
+        setState(() {
+          _selectedProductId = produto['id'];
+        });
+
+        // Aguarda um breve momento para o efeito de piscar
+        await Future.delayed(Duration(milliseconds: 300));
+
+        setState(() {
+          _selectedProductId = null;
+        });
+
+        // Exibe o diálogo de confirmação
+        _showAddToCartDialog(produto);
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: _selectedProductId == produto['id']
+              ? Colors.blue[100]
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              spreadRadius: 1,
             ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shopping_bag,
+                  size: 50, color: const Color.fromARGB(255, 152, 4, 215)),
+              SizedBox(height: 10),
+              Text(
+                produto['name'] ?? 'Nome indisponível',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 5),
+              Text(
+                'Preço: R\$ ${(double.tryParse(produto['value']) ?? 0.0).toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddToCartDialog(dynamic produto) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Adicionar ao carrinho'),
+          content: Text('Deseja adicionar "${produto['name']}" ao carrinho?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Não'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _addToCart(produto);
+              },
+              child: Text('Sim'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addToCart(dynamic produto) {
+    // Lógica para adicionar ao carrinho
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${produto['name']} adicionado ao carrinho!'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

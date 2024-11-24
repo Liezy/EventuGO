@@ -158,8 +158,9 @@ class _UserEventsPageState extends State<UserEventsPage>
               child: Text('Entrar em Evento'),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    const Color.fromARGB(255, 142, 32, 190), // Cor do botão
-                foregroundColor: Colors.white, // Cor do texto
+                    const Color.fromARGB(255, 152, 4, 215), // Cor do botão
+                foregroundColor:
+                    const Color.fromARGB(255, 14, 0, 0), // Cor do texto
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
