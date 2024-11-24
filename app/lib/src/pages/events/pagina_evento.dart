@@ -206,7 +206,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CarrinhoPage(produtosNoCarrinho: _carrinho),
+                  builder: (context) => CarrinhoPage(
+                    produtosNoCarrinho: _carrinho,
+                    eventoId: widget.eventId, // Passe o ID do evento selecionado
+                  ),
                 ),
               );
             }// Outras ações
