@@ -126,7 +126,7 @@ class _UserEventsPageState extends State<UserEventsPage>
           print('Erro ao criar saldo: ${createBalanceResponse.statusCode}');
         }
       }
-
+      
       // Após criar o saldo (se necessário), navegar para o evento
       Navigator.push(
         context,
