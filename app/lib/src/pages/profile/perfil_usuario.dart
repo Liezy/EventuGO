@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class UserProfilePage extends StatefulWidget {
   @override
@@ -17,11 +17,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
-  final TextEditingController _cpfController =
-      TextEditingController(); // Controller para CPF
-  final TextEditingController _passwordController =
-      TextEditingController(); // Controller para Senha
+  String _cpf = ''; // CPF armazenado separadamente para ser enviado na API
   bool _isEditing = false;
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -30,86 +28,70 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _uuid = prefs.getString('user_uid') ?? '';
-
+    _uuid = await _storage.read(key: 'user_uuid') ?? '';
     if (_uuid.isNotEmpty) {
-      final response = await http
-          .get(Uri.parse('http://127.0.0.1:8000/users/api/usuarios/$_uuid/'));
-      if (response.statusCode == 200) {
-        setState(() {
-          _userData = json.decode(response.body);
-          // Inicialize os controladores com os dados do usuário
-          _firstNameController.text = _userData?['first_name'] ?? '';
-          _lastNameController.text = _userData?['last_name'] ?? '';
-          _emailController.text = _userData?['email'] ?? '';
-          _phoneController.text = _userData?['phone'] ?? '';
-          _addressController.text = _userData?['address'] ?? '';
-          _birthDateController.text =
-              _userData?['birth_date'] != null ? _userData!['birth_date'] : '';
-          _cpfController.text =
-              _userData?['cpf'] ?? '000.000.000-00'; // Valor padrão para CPF
-          _passwordController.text = ''; // Valor padrão para Senha (vazio)
-        });
-      } else {
-        // Lidar com erro
-        print('Erro ao buscar dados do usuário: ${response.statusCode}');
+      final token = await _storage.read(key: 'access_token') ?? '';
+      if (token.isNotEmpty) {
+        final response = await http.get(
+          Uri.parse('http://127.0.0.1:8000/users/api/usuarios/$_uuid/'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          setState(() {
+            _userData = json.decode(response.body);
+            _firstNameController.text = _userData?['first_name'] ?? '';
+            _lastNameController.text = _userData?['last_name'] ?? '';
+            _emailController.text = _userData?['email'] ?? '';
+            _phoneController.text = _userData?['phone'] ?? '';
+            _addressController.text = _userData?['address'] ?? '';
+            _birthDateController.text = _userData?['birth_date'] ?? '';
+            _cpf = _userData?['cpf'] ?? '';
+          });
+        } else {
+          print('Erro ao buscar dados do usuário: ${response.statusCode}');
+        }
       }
     }
   }
 
   Future<void> _saveUserData() async {
-    final Map<String, String> dataToSave = {};
+    final Map<String, dynamic> dataToSave = {
+      "uid": _uuid,
+      "first_name": _firstNameController.text,
+      "last_name": _lastNameController.text,
+      "cpf": _cpf, // CPF enviado mesmo sendo não editável
+      "email": _emailController.text,
+      "phone": _phoneController.text,
+      "address": _addressController.text,
+      "birth_date":
+          _birthDateController.text.isEmpty ? null : _birthDateController.text,
+      "is_active": true,
+      "user_type": _userData?["user_type"] ?? 1,
+      "created_at":
+          _userData?["created_at"] ?? DateTime.now().toIso8601String(),
+    };
 
-    if (_firstNameController.text.isNotEmpty) {
-      dataToSave['first_name'] = _firstNameController.text;
-    }
-    if (_lastNameController.text.isNotEmpty) {
-      dataToSave['last_name'] = _lastNameController.text;
-    }
-    if (_emailController.text.isNotEmpty) {
-      dataToSave['email'] = _emailController.text;
-    }
-    if (_phoneController.text.isNotEmpty) {
-      dataToSave['phone'] = _phoneController.text;
-    }
-    if (_addressController.text.isNotEmpty) {
-      dataToSave['address'] = _addressController.text;
-    }
-    if (_birthDateController.text.isNotEmpty) {
-      dataToSave['birth_date'] = _birthDateController.text;
-    }
-    if (_cpfController.text.isNotEmpty) {
-      dataToSave['cpf'] = _cpfController.text; // Incluindo CPF no envio
-    }
-    if (_passwordController.text.isNotEmpty) {
-      dataToSave['password'] =
-          _passwordController.text; // Incluindo Senha no envio
-    }
+    final token = await _storage.read(key: 'access_token') ?? '';
+    final response = await http.put(
+      Uri.parse('http://127.0.0.1:8000/users/api/usuarios/$_uuid/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(dataToSave),
+    );
 
-    if (dataToSave.isNotEmpty) {
-      final response = await http.put(
-        Uri.parse('http://127.0.0.1:8000/users/api/usuarios/$_uuid/'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(dataToSave),
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dados salvos com sucesso!')),
       );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Dados salvos com sucesso!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Erro ao salvar dados: ${response.statusCode}, ${response.body}')),
-        );
-      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nenhum dado para salvar!')),
+        SnackBar(content: Text('Erro ao salvar dados: ${response.body}')),
       );
     }
   }
@@ -121,6 +103,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
       _isEditing = !_isEditing;
     });
+  }
+
+  Future<void> _selectBirthDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _birthDateController.text = picked.toIso8601String().split("T")[0];
+      });
+    }
   }
 
   @override
@@ -139,15 +136,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.grey[300],
-                      child: Text(
-                        '${_userData!['first_name'][0]}${_userData!['last_name'][0]}',
-                        style: TextStyle(fontSize: 24, color: Colors.white),
-                      ),
-                    ),
-                    SizedBox(height: 20),
                     TextField(
                       controller: _firstNameController,
                       readOnly: !_isEditing,
@@ -173,29 +161,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     SizedBox(height: 16),
                     TextField(
+                      controller: TextEditingController(text: _cpf),
+                      readOnly: true, // CPF não editável
+                      decoration: InputDecoration(labelText: 'CPF'),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
                       controller: _addressController,
                       readOnly: !_isEditing,
                       decoration: InputDecoration(labelText: 'Endereço'),
                     ),
                     SizedBox(height: 16),
-                    TextField(
-                      controller: _birthDateController,
-                      readOnly: !_isEditing,
-                      decoration:
-                          InputDecoration(labelText: 'Data de Nascimento'),
-                    ),
-                    SizedBox(height: 16),
-                    TextField(
-                      controller: _cpfController, // Campo de CPF
-                      readOnly: !_isEditing,
-                      decoration: InputDecoration(labelText: 'CPF'),
-                    ),
-                    SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController, // Campo de Senha
-                      obscureText: true, // Ocultar texto da senha
-                      readOnly: !_isEditing,
-                      decoration: InputDecoration(labelText: 'Senha'),
+                    GestureDetector(
+                      onTap: _isEditing ? _selectBirthDate : null,
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: _birthDateController,
+                          decoration:
+                              InputDecoration(labelText: 'Data de Nascimento'),
+                        ),
+                      ),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(

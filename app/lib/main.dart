@@ -1,8 +1,9 @@
-import 'package:app/src/pages/home/home_page.dart';
-import 'package:app/src/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'src/pages/auth/sign_in.dart';
+import 'src/pages/home/home_page.dart';
+import 'src/pages/main_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Certifique-se de ter essa importação
 
 void main() {
   runApp(MyApp());
@@ -16,7 +17,18 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FutureBuilder(
+      // Adicionando os localizationsDelegates corretamente
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations
+            .delegate, // Se você usar componentes Cupertino
+      ],
+      supportedLocales: [
+        const Locale('en', 'US'),
+        const Locale('pt', 'BR'),
+      ],
+      home: FutureBuilder<bool>(
         future: _checkLoginStatus(),
         builder: (context, snapshot) {
           // Verifica o status do futuro
@@ -24,7 +36,7 @@ class MyApp extends StatelessWidget {
             // Enquanto aguarda, pode mostrar um carregamento
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData && snapshot.data == true) {
-            // Se o usuário estiver autenticado, mostra a home
+            // Se o usuário estiver autenticado, mostra a página principal
             return MainPage();
           } else {
             // Caso contrário, mostra a página de login
@@ -37,8 +49,13 @@ class MyApp extends StatelessWidget {
 
   // Função para verificar se o usuário está autenticado
   Future<bool> _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userUid = prefs.getString('user_uid');
-    return userUid != null; // Retorna true se o UID existe
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? userUid = prefs.getString('user_uid');
+      return userUid != null; // Retorna true se o UID existe
+    } catch (e) {
+      print('Erro ao verificar login status: $e');
+      return false; // Caso ocorra um erro, consideramos o usuário não autenticado
+    }
   }
 }

@@ -4,6 +4,8 @@ import 'package:app/src/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:intl/intl.dart';
 
 class SignUpPage extends StatelessWidget {
   final _formKeyStep1 = GlobalKey<FormState>();
@@ -16,8 +18,10 @@ class SignUpPage extends StatelessWidget {
   // Controladores para Etapa 2 (Informações Pessoais)
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _sobrenomeController = TextEditingController();
-  final TextEditingController _cpfController = TextEditingController();
-  final TextEditingController _telefoneController = TextEditingController();
+  // final MaskedTextController _cpfController =
+  //  MaskedTextController(mask: '000.000.000-00');
+  final MaskedTextController _telefoneController =
+      MaskedTextController(mask: '(00) 00000-0000');
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _nascimentoController = TextEditingController();
 
@@ -27,7 +31,7 @@ class SignUpPage extends StatelessWidget {
     String senha,
     String nome,
     String sobrenome,
-    String cpf,
+    //  String cpf,
     String telefone,
     String endereco,
     String nascimento,
@@ -42,7 +46,7 @@ class SignUpPage extends StatelessWidget {
       body: jsonEncode(<String, dynamic>{
         'first_name': nome,
         'last_name': sobrenome,
-        'cpf': cpf,
+        //  'cpf': cpf,
         'email': email,
         'phone': telefone,
         'address': endereco,
@@ -97,22 +101,21 @@ class SignUpPage extends StatelessWidget {
     return Form(
       key: _formKeyStep1,
       child: Column(
-        mainAxisAlignment:
-            MainAxisAlignment.center, // Alinha verticalmente ao centro
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            '../../assets/static/image.png', // Verifique este caminho
-            width: 150, // Largura da imagem
-            height: 150, // Altura da imagem
+            '../../assets/static/image.png',
+            width: 150,
+            height: 150,
           ),
           TextFormField(
             controller: _emailController,
-            decoration: InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(
+                labelText: 'Email', border: OutlineInputBorder()),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Insira um email válido';
               }
-              // Validação adicional para formato de email
               final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
               if (!emailRegex.hasMatch(value)) {
                 return 'Insira um email válido';
@@ -122,13 +125,13 @@ class SignUpPage extends StatelessWidget {
           ),
           TextFormField(
             controller: _senhaController,
-            decoration: InputDecoration(labelText: 'Senha'),
+            decoration: InputDecoration(
+                labelText: 'Senha', border: OutlineInputBorder()),
             obscureText: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Insira uma senha válida';
               }
-              // Validação adicional para comprimento mínimo
               if (value.length < 6) {
                 return 'A senha deve ter pelo menos 6 caracteres';
               }
@@ -139,7 +142,6 @@ class SignUpPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               if (_formKeyStep1.currentState!.validate()) {
-                // Após validar, vai para a segunda etapa
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -155,11 +157,9 @@ class SignUpPage extends StatelessWidget {
             child: Text('Próximo'),
           ),
           SizedBox(height: 20),
-          // Link para a página de cadastro
           Text('Já tem uma conta?'),
           TextButton(
             onPressed: () {
-              // Navega para a página de cadastro
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => SignInPage()),
@@ -167,7 +167,7 @@ class SignUpPage extends StatelessWidget {
             },
             child: Text(
               'Faça Login',
-              style: TextStyle(color: Colors.blue), // Estilo do link
+              style: TextStyle(color: Colors.blue),
             ),
           ),
         ],
@@ -183,12 +183,9 @@ class SignUpPage extends StatelessWidget {
         title: Text('Cadastro'),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 100.0), // Padding lateral ajustado
+        padding: const EdgeInsets.symmetric(horizontal: 100.0),
         child: Center(
-          // Centraliza o conteúdo verticalmente
           child: SingleChildScrollView(
-            // Adicionado para permitir rolagem se necessário
             child: buildStep1(context),
           ),
         ),
@@ -197,7 +194,6 @@ class SignUpPage extends StatelessWidget {
   }
 }
 
-// Segunda Etapa - Informações Pessoais
 class Step2Page extends StatelessWidget {
   final String email;
   final String senha;
@@ -208,8 +204,10 @@ class Step2Page extends StatelessWidget {
   // Controladores para Etapa 2
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _sobrenomeController = TextEditingController();
-  final TextEditingController _cpfController = TextEditingController();
-  final TextEditingController _telefoneController = TextEditingController();
+  //final MaskedTextController _cpfController =
+  //   MaskedTextController(mask: '000.000.000-00');
+  final MaskedTextController _telefoneController =
+      MaskedTextController(mask: '(00) 00000-0000');
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _nascimentoController = TextEditingController();
 
@@ -219,6 +217,21 @@ class Step2Page extends StatelessWidget {
     required this.cadastrarUsuario,
   });
 
+  void _selecionarData(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'),
+    );
+
+    if (pickedDate != null) {
+      final String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+      _nascimentoController.text = formattedDate;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,21 +239,17 @@ class Step2Page extends StatelessWidget {
         title: Text('Cadastro'),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 128.0), // Padding lateral ajustado
+        padding: const EdgeInsets.symmetric(horizontal: 128.0),
         child: Center(
-          // Centraliza o conteúdo verticalmente
           child: SingleChildScrollView(
-            // Adicionado para permitir rolagem se necessário
             child: Form(
               key: _formKeyStep2,
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center, // Alinha verticalmente ao centro
                 children: [
                   TextFormField(
                     controller: _nomeController,
-                    decoration: InputDecoration(labelText: 'Nome'),
+                    decoration: InputDecoration(
+                        labelText: 'Nome', border: OutlineInputBorder()),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira seu nome';
@@ -250,7 +259,8 @@ class Step2Page extends StatelessWidget {
                   ),
                   TextFormField(
                     controller: _sobrenomeController,
-                    decoration: InputDecoration(labelText: 'Sobrenome'),
+                    decoration: InputDecoration(
+                        labelText: 'Sobrenome', border: OutlineInputBorder()),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira seu sobrenome';
@@ -259,24 +269,9 @@ class Step2Page extends StatelessWidget {
                     },
                   ),
                   TextFormField(
-                    controller: _cpfController,
-                    decoration: InputDecoration(labelText: 'CPF'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Insira um CPF válido';
-                      }
-                      // Validação adicional para formato de CPF (apenas exemplo simplificado)
-                      final cpfRegex =
-                          RegExp(r'^\d{11}$'); // CPF deve ter 11 dígitos
-                      if (!cpfRegex.hasMatch(value)) {
-                        return 'Insira um CPF válido';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
                     controller: _telefoneController,
-                    decoration: InputDecoration(labelText: 'Telefone'),
+                    decoration: InputDecoration(
+                        labelText: 'Telefone', border: OutlineInputBorder()),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira seu telefone';
@@ -286,7 +281,8 @@ class Step2Page extends StatelessWidget {
                   ),
                   TextFormField(
                     controller: _enderecoController,
-                    decoration: InputDecoration(labelText: 'Endereço'),
+                    decoration: InputDecoration(
+                        labelText: 'Endereço', border: OutlineInputBorder()),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira seu endereço';
@@ -296,8 +292,14 @@ class Step2Page extends StatelessWidget {
                   ),
                   TextFormField(
                     controller: _nascimentoController,
-                    decoration:
-                        InputDecoration(labelText: 'Data de Nascimento'),
+                    decoration: InputDecoration(
+                      labelText: 'Data de Nascimento',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.calendar_today),
+                        onPressed: () => _selecionarData(context),
+                      ),
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira sua data de nascimento';
@@ -309,21 +311,20 @@ class Step2Page extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       if (_formKeyStep2.currentState!.validate()) {
-                        // Realiza o cadastro
                         cadastrarUsuario(
                           email,
                           senha,
                           _nomeController.text,
                           _sobrenomeController.text,
-                          _cpfController.text,
+                          //                         _cpfController.text,
                           _telefoneController.text,
                           _enderecoController.text,
                           _nascimentoController.text,
                         ).then((_) {
-                          // Se o cadastro for bem-sucedido, navegue para MainPage
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => MainPage()),
+                            MaterialPageRoute(
+                                builder: (context) => SignInPage()),
                           );
                         });
                       }

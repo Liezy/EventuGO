@@ -7,7 +7,7 @@ class CustomUser(AbstractUser):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
     first_name = models.CharField(max_length=255, verbose_name="Nome")
     last_name = models.CharField(max_length=255, verbose_name="Sobrenome")
-    cpf = models.CharField(max_length=11, unique=True, verbose_name="CPF")
+    cpf = models.CharField(max_length=11, verbose_name="CPF", blank=True, null=True)
     email = models.EmailField(unique=True, verbose_name="E-mail")
     phone = models.CharField(max_length=15, verbose_name="Telefone") 
     address = models.TextField(verbose_name="Endereço")

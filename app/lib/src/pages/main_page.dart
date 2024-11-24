@@ -33,8 +33,9 @@ class _MainPageState extends State<MainPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) =>
-              SignInPage()), // Redireciona para a página de login
+        builder: (context) =>
+            SignInPage(), // Redireciona para a página de login
+      ),
     );
   }
 
@@ -78,33 +79,6 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        width: 100, // Define a largura do botão flutuante
-        height: 56, // Define a altura do botão flutuante
-        child: FloatingActionButton(
-          onPressed: _logout,
-          backgroundColor: Colors.red, // Cor de fundo do botão flutuante
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero, // Remove os cantos arredondados
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.exit_to_app,
-                  color: Colors.white), // Ícone de sair em branco
-              SizedBox(width: 5), // Espaçamento entre o ícone e o texto
-              Text(
-                'Sair',
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white), // Texto 'Sair' em branco
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.endTop, // Localização do botão flutuante
     );
   }
 }
