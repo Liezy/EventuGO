@@ -323,7 +323,8 @@ class Step2Page extends StatelessWidget {
                         ).then((_) {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => MainPage()),
+                            MaterialPageRoute(
+                                builder: (context) => SignInPage()),
                           );
                         });
                       }

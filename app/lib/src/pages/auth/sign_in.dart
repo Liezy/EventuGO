@@ -4,6 +4,7 @@ import 'package:app/src/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -17,11 +18,16 @@ class SignInPage extends StatelessWidget {
   }
 
   Future<void> saveUserInfo(Map<String, dynamic> userData) async {
-    await storage.write(
-        key: 'user_uuid', value: userData['uid']); // Ajustado para 'uid'
+    // Salva no Secure Storage
+    await storage.write(key: 'user_uuid', value: userData['uid']);
     await storage.write(key: 'user_name', value: userData['first_name']);
     await storage.write(key: 'user_email', value: userData['email']);
-    print('Informações do usuário salvas: $userData');
+
+    // Também salva no SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('user_uid', userData['uid']);
+    print(
+        'Informações do usuário salvas no SharedPreferences e Secure Storage: $userData');
   }
 
   Future<String?> getToken() async {
