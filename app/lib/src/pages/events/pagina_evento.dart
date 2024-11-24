@@ -3,6 +3,7 @@ import 'transacao_qr_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app/src/pages/events/carrinho_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
@@ -16,6 +17,7 @@ class EventDetailPage extends StatefulWidget {
 class _EventDetailPageState extends State<EventDetailPage> {
   dynamic _eventData;
   List<dynamic> _produtos = [];
+  List<dynamic> _carrinho = [];
   String? _saldo;
   bool _isLoading = true;
   int? _selectedProductId;
@@ -200,9 +202,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 context,
                 MaterialPageRoute(builder: (context) => TransacaoQrPage()),
               );
-            } else {
-              // Outras ações
-            }
+            } else if (label == 'Carrinho') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CarrinhoPage(produtosNoCarrinho: _carrinho),
+                ),
+              );
+            }// Outras ações
           },
         ),
         Text(label),
@@ -298,6 +305,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   void _addToCart(dynamic produto) {
     // Lógica para adicionar ao carrinho
+    setState(() {
+      _carrinho.add(produto);
+    });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${produto['name']} adicionado ao carrinho!'),
