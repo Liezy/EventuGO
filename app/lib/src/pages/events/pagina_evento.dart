@@ -152,7 +152,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           children: [
                             _buildActionButton(Icons.history, 'Histórico'),
                             _buildActionButton(Icons.attach_money, 'Recarga'),
-                            _buildActionButton(Icons.shopping_cart, 'Comprar'),
+                            _buildActionButton(Icons.shopping_cart, 'Carrinho'),
                           ],
                         ),
                         SizedBox(height: 30),
