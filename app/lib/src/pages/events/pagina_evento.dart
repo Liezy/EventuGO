@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/src/pages/events/carrinho_page.dart';
 import 'package:app/src/pages/events/listagem_eventos.dart';
+import 'package:app/src/pages/events/edit_event_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
@@ -22,18 +23,42 @@ class _EventDetailPageState extends State<EventDetailPage> {
   String? _saldo;
   bool _isLoading = true;
   int? _selectedProductId;
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchEventDetails(); // Carregar detalhes do evento
-    _fetchProdutos(); // Carregar produtos
+    _fetchEventDetails();
+    _fetchProdutos();
+    _checkUserRole();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchUserSaldo(); // Atualiza o saldo sempre que a página muda
+    _fetchUserSaldo();
+  }
+
+  Future<void> _checkUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userUid = prefs.getString('user_uid');
+
+    final response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/users/api/usuarios/'),
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> users = jsonDecode(utf8.decode(response.bodyBytes));
+      var user = users.firstWhere((u) => u['uid'] == userUid, orElse: () => null);
+
+      if (user != null) {
+        setState(() {
+          _isAdmin = user['user_type'] == 3;
+        });
+      }
+    } else {
+      print('Falha ao buscar dados do usuário: ${response.statusCode}');
+    }
   }
 
   Future<void> _fetchEventDetails() async {
@@ -114,6 +139,22 @@ class _EventDetailPageState extends State<EventDetailPage> {
               );
             },
           ),
+          if (_isAdmin)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'Editar Evento') {
+                  _editEvent();
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return {'Editar Evento'}.map((String choice) {
+                  return PopupMenuItem<String>(
+                    value: choice,
+                    child: Text(choice),
+                  );
+                }).toList();
+              },
+            ),
         ],
       ),
       body: _isLoading
@@ -206,6 +247,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
+  void _editEvent() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditEventPage(eventId: widget.eventId),
+      ),
+    );
+  }
+
   Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
@@ -278,7 +328,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               ),
               SizedBox(height: 5),
               Text(
-                'Preço: R\$ ${(double.tryParse(produto['value']) ?? 0.0).toStringAsFixed(2)}',
+                'Preço: R\$ ${(produto['value'] is String ? double.tryParse(produto['value']) : produto['value'] ?? 0.0).toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
@@ -288,41 +338,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
+
   void _showAddToCartDialog(dynamic produto) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('Adicionar ao carrinho'),
-          content: Text('Deseja adicionar "${produto['name']}" ao carrinho?'),
+          content: Text('Deseja adicionar ${produto['name']} ao carrinho?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Não'),
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
+                setState(() {
+                  _carrinho.add(produto);
+                });
                 Navigator.pop(context);
-                _addToCart(produto);
               },
-              child: Text('Sim'),
+              child: Text('Adicionar'),
             ),
           ],
         );
       },
-    );
-  }
-
-  void _addToCart(dynamic produto) {
-    setState(() {
-      _carrinho.add(produto);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${produto['name']} adicionado ao carrinho!'),
-      ),
     );
   }
 }
