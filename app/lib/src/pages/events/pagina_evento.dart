@@ -26,14 +26,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
   @override
   void initState() {
     super.initState();
-    _fetchEventDetails(); // Detalhes do evento são carregados apenas uma vez
-    _fetchProdutos(); // Produtos são carregados apenas uma vez
+    _fetchEventDetails(); // Carregar detalhes do evento
+    _fetchProdutos(); // Carregar produtos
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchUserSaldo(); // Atualiza o saldo toda vez que a página é carregada
+    _fetchUserSaldo(); // Atualiza o saldo sempre que a página muda
   }
 
   Future<void> _fetchEventDetails() async {
@@ -43,7 +43,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _eventData = jsonDecode(response.body);
+        _eventData = jsonDecode(utf8.decode(response.bodyBytes));
       });
     } else {
       print('Falha ao buscar detalhes do evento: ${response.statusCode}');
@@ -59,7 +59,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
 
     if (saldoResponse.statusCode == 200) {
-      List<dynamic> saldos = jsonDecode(saldoResponse.body);
+      List<dynamic> saldos =
+          jsonDecode(utf8.decode(saldoResponse.bodyBytes));
 
       var saldo = saldos.firstWhere(
           (s) => s['event'] == widget.eventId && s['user'] == userUid,
@@ -89,7 +90,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _produtos = jsonDecode(response.body);
+        _produtos = jsonDecode(utf8.decode(response.bodyBytes));
       });
     } else {
       print('Falha ao buscar produtos: ${response.statusCode}');
@@ -105,12 +106,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
           IconButton(
             icon: Icon(Icons.home),
             onPressed: () {
-              // Navega para a página de listagem de eventos sem remover as rotas anteriores
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      UserEventsPage(), // Página de listagem de eventos
+                  builder: (context) => UserEventsPage(),
                 ),
               );
             },
@@ -127,7 +126,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Placeholder da foto do evento
                         Container(
                           width: 100,
                           height: 100,
@@ -138,7 +136,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           child: Icon(Icons.event, size: 50),
                         ),
                         SizedBox(height: 20),
-                        // Nome do evento
                         Text(
                           _eventData['name'] ?? 'Nome do evento não disponível',
                           style: TextStyle(
@@ -147,7 +144,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 10),
-                        // Descrição do evento
                         Text(
                           _eventData['description'] ??
                               'Descrição do evento não disponível',
@@ -158,7 +154,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 30),
-                        // Saldo do usuário no evento
                         Text(
                           _saldo != null
                               ? 'Saldo: $_saldo'
@@ -170,7 +165,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 30),
-                        // Botões de ações
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -180,7 +174,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ],
                         ),
                         SizedBox(height: 30),
-                        // Lista de produtos em cards
                         Text(
                           'Produtos',
                           style: TextStyle(
@@ -230,12 +223,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 MaterialPageRoute(
                   builder: (context) => CarrinhoPage(
                     produtosNoCarrinho: _carrinho,
-                    eventoId:
-                        widget.eventId, // Passe o ID do evento selecionado
+                    eventoId: widget.eventId,
                   ),
                 ),
               );
-            } // Outras ações
+            }
           },
         ),
         Text(label),
@@ -246,19 +238,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Widget _buildProdutoCard(dynamic produto) {
     return GestureDetector(
       onTap: () async {
-        // Inicia o efeito de piscar
         setState(() {
           _selectedProductId = produto['id'];
         });
-
-        // Aguarda um breve momento para o efeito de piscar
         await Future.delayed(Duration(milliseconds: 300));
-
         setState(() {
           _selectedProductId = null;
         });
-
-        // Exibe o diálogo de confirmação
         _showAddToCartDialog(produto);
       },
       child: AnimatedContainer(
@@ -330,14 +316,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _addToCart(dynamic produto) {
-    // Lógica para adicionar ao carrinho
     setState(() {
       _carrinho.add(produto);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${produto['name']} adicionado ao carrinho!'),
-        duration: Duration(seconds: 2),
       ),
     );
   }

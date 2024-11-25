@@ -23,12 +23,12 @@ class _UserEventsPageState extends State<UserEventsPage>
     super.initState();
     _fetchUserEvents();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300), // Duração da animação
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           Future.delayed(Duration(milliseconds: 100), () {
-            _animationController.reverse(); // Voltar à opacidade inicial
+            _animationController.reverse();
           });
         }
       });
@@ -53,7 +53,7 @@ class _UserEventsPageState extends State<UserEventsPage>
         await http.get(Uri.parse('http://127.0.0.1:8000/event/api/saldos/'));
 
     if (saldoResponse.statusCode == 200) {
-      List<dynamic> saldos = jsonDecode(saldoResponse.body);
+      List<dynamic> saldos = jsonDecode(utf8.decode(saldoResponse.bodyBytes));
       print('Saldos recebidos: $saldos');
 
       List<int> eventIds = saldos
@@ -77,7 +77,7 @@ class _UserEventsPageState extends State<UserEventsPage>
     final eventosResponse =
         await http.get(Uri.parse('http://127.0.0.1:8000/event/api/eventos/'));
     if (eventosResponse.statusCode == 200) {
-      List<dynamic> eventos = jsonDecode(eventosResponse.body);
+      List<dynamic> eventos = jsonDecode(utf8.decode(eventosResponse.bodyBytes));
       print('Eventos recebidos: $eventos');
 
       setState(() {
@@ -94,28 +94,25 @@ class _UserEventsPageState extends State<UserEventsPage>
     }
   }
 
-  // Função para criar saldo se não existir
   Future<void> _createBalanceAndEnterEvent(dynamic evento) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userUid = prefs.getString('user_uid');
 
-    // Verificar se já existe saldo para o evento
     final saldoResponse =
         await http.get(Uri.parse('http://127.0.0.1:8000/event/api/saldos/'));
     if (saldoResponse.statusCode == 200) {
-      List<dynamic> saldos = jsonDecode(saldoResponse.body);
+      List<dynamic> saldos = jsonDecode(utf8.decode(saldoResponse.bodyBytes));
       bool hasBalance = saldos.any((saldo) =>
           saldo['user'] == userUid && saldo['event'] == evento['id']);
 
       if (!hasBalance) {
-        // Se não tiver saldo, criar um saldo
         final createBalanceResponse = await http.post(
           Uri.parse('http://127.0.0.1:8000/event/api/saldos/'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'uid': userUid,
             'event': evento['id'],
-            'currency': 0, // Ajuste conforme necessário
+            'currency': 0,
             'user': userUid
           }),
         );
@@ -127,7 +124,6 @@ class _UserEventsPageState extends State<UserEventsPage>
         }
       }
 
-      // Após criar o saldo (se necessário), navegar para o evento
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -139,13 +135,11 @@ class _UserEventsPageState extends State<UserEventsPage>
     }
   }
 
-  // Função para construir o botão com animação de piscar
   Widget _buildJoinButton(dynamic evento) {
     return GestureDetector(
       onTap: () async {
-        _animationController.forward(); // Inicia a animação de piscar ao clicar
-        await _createBalanceAndEnterEvent(
-            evento); // Verifica e cria saldo se necessário
+        _animationController.forward();
+        await _createBalanceAndEnterEvent(evento);
       },
       child: AnimatedBuilder(
         animation: _opacityAnimation,
@@ -153,14 +147,11 @@ class _UserEventsPageState extends State<UserEventsPage>
           return Opacity(
             opacity: _opacityAnimation.value,
             child: ElevatedButton(
-              onPressed:
-                  null, // Controle do clique é feito pelo GestureDetector
+              onPressed: null,
               child: Text('Entrar em Evento'),
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color.fromARGB(255, 152, 4, 215), // Cor do botão
-                foregroundColor:
-                    const Color.fromARGB(255, 14, 0, 0), // Cor do texto
+                backgroundColor: const Color.fromARGB(255, 152, 4, 215),
+                foregroundColor: const Color.fromARGB(255, 14, 0, 0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -182,7 +173,6 @@ class _UserEventsPageState extends State<UserEventsPage>
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Exibir os eventos que o usuário está participando
                   _eventosParticipando.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -212,8 +202,6 @@ class _UserEventsPageState extends State<UserEventsPage>
                           ),
                         )
                       : Container(),
-
-                  // Exibir os eventos que o usuário não está participando
                   _eventosNaoParticipando.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -247,33 +235,5 @@ class _UserEventsPageState extends State<UserEventsPage>
               ),
             ),
     );
-  }
-
-  Widget _getEventStatus(dynamic evento) {
-    DateTime now = DateTime.now();
-    DateTime startDate = DateTime.parse(evento['start_date']);
-    DateTime endDate = DateTime.parse(evento['end_date']);
-
-    if (now.isBefore(startDate)) {
-      return Text('Vai Acontecer');
-    } else if (now.isAfter(endDate)) {
-      return Text('Já Aconteceu');
-    } else {
-      return Text('Está Acontecendo');
-    }
-  }
-
-  Color _getBorderColor(dynamic evento) {
-    DateTime now = DateTime.now();
-    DateTime startDate = DateTime.parse(evento['start_date']);
-    DateTime endDate = DateTime.parse(evento['end_date']);
-
-    if (now.isBefore(startDate)) {
-      return Colors.amber;
-    } else if (now.isAfter(endDate)) {
-      return Colors.red;
-    } else {
-      return Colors.green;
-    }
   }
 }
