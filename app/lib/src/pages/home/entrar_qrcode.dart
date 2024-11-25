@@ -1,68 +1,110 @@
 import 'dart:convert';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:mobile_scanner/mobile_scanner.dart'; // Adicione o pacote de scanner
-import '../../widgets/action_button.dart';
-import '../../widgets/text_field.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:app/src/pages/home/home_page.dart'; // Importando a HomePage
 
-class EventEntryPage extends StatefulWidget {
+class QrCodeScanPage extends StatefulWidget {
   @override
-  _EventEntryPageState createState() => _EventEntryPageState();
+  _QrCodeScanPageState createState() => _QrCodeScanPageState();
 }
 
-class _EventEntryPageState extends State<EventEntryPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _eventIdController = TextEditingController();
-  String? _qrData;
+class _QrCodeScanPageState extends State<QrCodeScanPage> {
+  final String apiUrlSaldos = "http://127.0.0.1:8000/event/api/saldos/";
+  final storage = FlutterSecureStorage();
+  bool _isQrScanned = false; // Evita duplicações no QR Code
 
-  // Método para gerar os dados do QR Code com base no ID do evento existente
-  void _gerarQRCode() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _qrData = jsonEncode({
-          'event_id': _eventIdController.text,
-        });
-      });
-    }
-  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scanner de QR Code'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Retroceder automaticamente
+          },
+        ),
+      ),
+      body: MobileScanner(
+        onDetect: (BarcodeCapture barcodeCapture) {
+          if (_isQrScanned) return; // Evita duplicações
 
-  // Função para processar o QR code escaneado e entrar no evento
-  void _processarQrCode(String qrCodeData) {
-    try {
-      Map<String, dynamic> qrData = jsonDecode(qrCodeData);
-      final String? eventId = qrData['event_id'];
-      if (eventId != null) {
-        _showSuccessDialog(context, 'Você entrou no evento com ID: $eventId');
-      } else {
-        _showErrorDialog(context, 'QR Code inválido.');
-      }
-    } catch (e) {
-      _showErrorDialog(context, 'QR Code inválido.');
-    }
-  }
-
-  // Exibir diálogo de sucesso
-  void _showSuccessDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Sucesso'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
+          final List<Barcode> barcodes = barcodeCapture.barcodes;
+          for (var barcode in barcodes) {
+            if (barcode.rawValue != null) {
+              final String code = barcode.rawValue!;
+              print('QR Code detectado: $code');
+              _processQrData(
+                  code, context); // Passa o contexto para mostrar a mensagem
+              _isQrScanned = true; // Marca que o QR foi escaneado
+            }
+          }
+        },
+      ),
     );
   }
 
-  // Exibir diálogo de erro
+  void _processQrData(String code, BuildContext context) async {
+    String evento = code; // Número do evento lido do QR Code
+    print('Número do evento lido: $evento');
+
+    // Chama a função para criar a instância de saldo
+    await _criarSaldo(evento, context);
+  }
+
+  Future<void> _criarSaldo(String evento, BuildContext context) async {
+    try {
+      final userUuid = await storage.read(key: 'user_uuid');
+      if (userUuid == null) {
+        _showErrorDialog(
+            context, 'Usuário não encontrado no armazenamento seguro.');
+        return;
+      }
+
+      final saldoData = {
+        "user": userUuid,
+        "event": evento,
+        "currency": "0.00", // Valor padrão
+      };
+
+      final response = await http.post(
+        Uri.parse(apiUrlSaldos),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(saldoData),
+      );
+
+      if (response.statusCode == 201) {
+        print('Instância de saldo criada com sucesso.');
+
+        // Exibir o SnackBar antes de navegar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Entrou no evento com sucesso!')),
+        );
+
+        // Aguardar a animação do SnackBar ser concluída antes de navegar
+        await Future.delayed(Duration(seconds: 1));
+
+        // Navegar para a HomePage corretamente
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MyApp()), // Redireciona para a HomePage
+          (route) => false, // Remove todas as rotas anteriores
+        );
+      } else {
+        _showErrorDialog(context, 'Erro ao criar instância de saldo.');
+      }
+    } catch (e) {
+      print('Erro: $e');
+      _showErrorDialog(context, 'Erro ao tentar criar instância de saldo.');
+    }
+  }
+
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -80,92 +122,6 @@ class _EventEntryPageState extends State<EventEntryPage> {
           ],
         );
       },
-    );
-  }
-
-  // Função para escanear o QR code usando a câmera
-  void _escanearQrCode() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: Text('Escanear QR Code')),
-          body: MobileScanner(
-            onDetect: (barcodeCapture) {
-              for (final barcode in barcodeCapture.barcodes) {
-                if (barcode.rawValue != null) {
-                  final qrCodeData = barcode.rawValue!;
-                  Navigator.of(context)
-                      .pop(); // Fecha o scanner ao detectar o QR code
-                  _processarQrCode(qrCodeData); // Processa o QR code escaneado
-                }
-              }
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Entrada no Evento via QR Code'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    buildTextField(
-                      _eventIdController,
-                      'ID do Evento',
-                    ),
-                    SizedBox(height: 20),
-                    buildActionButton(
-                      'Criar QR Code',
-                      Colors.green,
-                      Colors.white,
-                      Icons.qr_code,
-                      _gerarQRCode,
-                    ),
-                    SizedBox(height: 10),
-                    buildActionButton(
-                      'Escanear QR Code',
-                      Colors.blue,
-                      Colors.white,
-                      Icons.qr_code_scanner,
-                      _escanearQrCode,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              if (_qrData !=
-                  null) // Exibe o QR Code apenas se os dados existirem
-                Card(
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: QrImageView(
-                      data: _qrData!, // Dados para o QR Code
-                      version: QrVersions.auto,
-                      size: 200.0,
-                      gapless: false,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
