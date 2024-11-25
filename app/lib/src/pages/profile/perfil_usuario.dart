@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:app/src/pages/auth/sign_in.dart'; // Importando a página de login
 
 class UserProfilePage extends StatefulWidget {
   @override
@@ -120,6 +121,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  Future<void> _logout() async {
+    // Remover o token e o UUID do armazenamento seguro
+    await _storage.delete(key: 'access_token');
+    await _storage.delete(key: 'user_uuid');
+
+    // Redirecionar para a página de login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,6 +204,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           Icon(_isEditing ? Icons.save : Icons.edit),
                           SizedBox(width: 8),
                           Text(_isEditing ? 'Salvar' : 'Editar'),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _logout,
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.logout),
+                          SizedBox(width: 8),
+                          Text('Logout'),
                         ],
                       ),
                     ),
