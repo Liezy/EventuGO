@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/src/pages/events/carrinho_page.dart';
 import 'package:app/src/pages/events/listagem_eventos.dart';
+import 'package:app/src/pages/events/edit_event_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
@@ -22,18 +23,42 @@ class _EventDetailPageState extends State<EventDetailPage> {
   String? _saldo;
   bool _isLoading = true;
   int? _selectedProductId;
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchEventDetails(); // Detalhes do evento são carregados apenas uma vez
-    _fetchProdutos(); // Produtos são carregados apenas uma vez
+    _fetchEventDetails();
+    _fetchProdutos();
+    _checkUserRole();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchUserSaldo(); // Atualiza o saldo toda vez que a página é carregada
+    _fetchUserSaldo();
+  }
+
+  Future<void> _checkUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userUid = prefs.getString('user_uid');
+
+    final response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/users/api/usuarios/'),
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> users = jsonDecode(utf8.decode(response.bodyBytes));
+      var user = users.firstWhere((u) => u['uid'] == userUid, orElse: () => null);
+
+      if (user != null) {
+        setState(() {
+          _isAdmin = user['user_type'] == 3;
+        });
+      }
+    } else {
+      print('Falha ao buscar dados do usuário: ${response.statusCode}');
+    }
   }
 
   Future<void> _fetchEventDetails() async {
@@ -43,7 +68,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _eventData = jsonDecode(response.body);
+        _eventData = jsonDecode(utf8.decode(response.bodyBytes));
       });
     } else {
       print('Falha ao buscar detalhes do evento: ${response.statusCode}');
@@ -59,7 +84,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
 
     if (saldoResponse.statusCode == 200) {
-      List<dynamic> saldos = jsonDecode(saldoResponse.body);
+      List<dynamic> saldos = jsonDecode(utf8.decode(saldoResponse.bodyBytes));
 
       var saldo = saldos.firstWhere(
           (s) => s['event'] == widget.eventId && s['user'] == userUid,
@@ -89,7 +114,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _produtos = jsonDecode(response.body);
+        _produtos = jsonDecode(utf8.decode(response.bodyBytes));
       });
     } else {
       print('Falha ao buscar produtos: ${response.statusCode}');
@@ -105,16 +130,30 @@ class _EventDetailPageState extends State<EventDetailPage> {
           IconButton(
             icon: Icon(Icons.home),
             onPressed: () {
-              // Navega para a página de listagem de eventos sem remover as rotas anteriores
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      UserEventsPage(), // Página de listagem de eventos
+                  builder: (context) => UserEventsPage(),
                 ),
               );
             },
           ),
+          if (_isAdmin)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'Editar Evento') {
+                  _editEvent();
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return {'Editar Evento'}.map((String choice) {
+                  return PopupMenuItem<String>(
+                    value: choice,
+                    child: Text(choice),
+                  );
+                }).toList();
+              },
+            ),
         ],
       ),
       body: _isLoading
@@ -127,18 +166,17 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Placeholder da foto do evento
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
+                        // Imagem local do evento
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            'assets/static/evento.png',
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
                           ),
-                          child: Icon(Icons.event, size: 50),
                         ),
                         SizedBox(height: 20),
-                        // Nome do evento
                         Text(
                           _eventData['name'] ?? 'Nome do evento não disponível',
                           style: TextStyle(
@@ -147,7 +185,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 10),
-                        // Descrição do evento
                         Text(
                           _eventData['description'] ??
                               'Descrição do evento não disponível',
@@ -158,7 +195,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 30),
-                        // Saldo do usuário no evento
                         Text(
                           _saldo != null
                               ? 'Saldo: $_saldo'
@@ -170,7 +206,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ),
                         ),
                         SizedBox(height: 30),
-                        // Botões de ações
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -180,7 +215,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           ],
                         ),
                         SizedBox(height: 30),
-                        // Lista de produtos em cards
                         Text(
                           'Produtos',
                           style: TextStyle(
@@ -213,6 +247,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
+
+  void _editEvent() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditEventPage(eventId: widget.eventId),
+      ),
+    );
+  }
+
   Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
@@ -230,12 +274,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 MaterialPageRoute(
                   builder: (context) => CarrinhoPage(
                     produtosNoCarrinho: _carrinho,
-                    eventoId:
-                        widget.eventId, // Passe o ID do evento selecionado
+                    eventoId: widget.eventId,
                   ),
                 ),
               );
-            } // Outras ações
+            }
           },
         ),
         Text(label),
@@ -246,19 +289,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Widget _buildProdutoCard(dynamic produto) {
     return GestureDetector(
       onTap: () async {
-        // Inicia o efeito de piscar
         setState(() {
           _selectedProductId = produto['id'];
         });
-
-        // Aguarda um breve momento para o efeito de piscar
         await Future.delayed(Duration(milliseconds: 300));
-
         setState(() {
           _selectedProductId = null;
         });
-
-        // Exibe o diálogo de confirmação
         _showAddToCartDialog(produto);
       },
       child: AnimatedContainer(
@@ -292,7 +329,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               ),
               SizedBox(height: 5),
               Text(
-                'Preço: R\$ ${(double.tryParse(produto['value']) ?? 0.0).toStringAsFixed(2)}',
+                'Preço: R\$ ${(produto['value'] is String ? double.tryParse(produto['value']) : produto['value'] ?? 0.0).toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
@@ -308,37 +345,24 @@ class _EventDetailPageState extends State<EventDetailPage> {
       builder: (context) {
         return AlertDialog(
           title: Text('Adicionar ao carrinho'),
-          content: Text('Deseja adicionar "${produto['name']}" ao carrinho?'),
+          content: Text('Deseja adicionar ${produto['name']} ao carrinho?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Não'),
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
+                setState(() {
+                  _carrinho.add(produto);
+                });
                 Navigator.pop(context);
-                _addToCart(produto);
               },
-              child: Text('Sim'),
+              child: Text('Adicionar'),
             ),
           ],
         );
       },
-    );
-  }
-
-  void _addToCart(dynamic produto) {
-    // Lógica para adicionar ao carrinho
-    setState(() {
-      _carrinho.add(produto);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${produto['name']} adicionado ao carrinho!'),
-        duration: Duration(seconds: 2),
-      ),
     );
   }
 }
