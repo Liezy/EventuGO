@@ -148,7 +148,7 @@ class _UserEventsPageState extends State<UserEventsPage>
             opacity: _opacityAnimation.value,
             child: ElevatedButton(
               onPressed: null,
-              child: Text('Entrar em Evento'),
+              child: Text('Detalhes'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 152, 4, 215),
                 foregroundColor: const Color.fromARGB(255, 14, 0, 0),
@@ -191,10 +191,25 @@ class _UserEventsPageState extends State<UserEventsPage>
                                   elevation: 4,
                                   margin: EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 16),
-                                  child: ListTile(
-                                    title: Text(evento['name']),
-                                    subtitle: Text(evento['description']),
-                                    trailing: _buildJoinButton(evento),
+                                  child: Column(
+                                    children: [
+                                      // Adicionando imagem ao card
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8)),
+                                        child: Image.asset(
+                                          'assets/static/evento.png',
+                                          height: 150,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: Text(evento['name']),
+                                        subtitle: Text(evento['description']),
+                                        trailing: _buildJoinButton(evento),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }).toList(),
@@ -220,10 +235,25 @@ class _UserEventsPageState extends State<UserEventsPage>
                                   elevation: 4,
                                   margin: EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 16),
-                                  child: ListTile(
-                                    title: Text(evento['name']),
-                                    subtitle: Text(evento['description']),
-                                    trailing: _buildJoinButton(evento),
+                                  child: Column(
+                                    children: [
+                                      // Adicionando imagem ao card
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8)),
+                                        child: Image.asset(
+                                          'assets/static/evento.png',
+                                          height: 150,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: Text(evento['name']),
+                                        subtitle: Text(evento['description']),
+                                        trailing: _buildJoinButton(evento),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }).toList(),
@@ -236,4 +266,5 @@ class _UserEventsPageState extends State<UserEventsPage>
             ),
     );
   }
+
 }

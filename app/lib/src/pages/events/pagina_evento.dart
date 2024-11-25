@@ -84,8 +84,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
 
     if (saldoResponse.statusCode == 200) {
-      List<dynamic> saldos =
-          jsonDecode(utf8.decode(saldoResponse.bodyBytes));
+      List<dynamic> saldos = jsonDecode(utf8.decode(saldoResponse.bodyBytes));
 
       var saldo = saldos.firstWhere(
           (s) => s['event'] == widget.eventId && s['user'] == userUid,
@@ -167,14 +166,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
+                        // Imagem local do evento
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            'assets/static/evento.png',
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
                           ),
-                          child: Icon(Icons.event, size: 50),
                         ),
                         SizedBox(height: 20),
                         Text(
@@ -246,6 +246,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 ),
     );
   }
+
 
   void _editEvent() {
     Navigator.push(
@@ -337,7 +338,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
       ),
     );
   }
-
 
   void _showAddToCartDialog(dynamic produto) {
     showDialog(
