@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Remove a faixa de debug
       title: 'EventuGo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
