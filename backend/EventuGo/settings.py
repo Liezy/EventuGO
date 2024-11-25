@@ -92,7 +92,11 @@ WSGI_APPLICATION = 'EventuGo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'postgres',
+        'USER': 'postgres.gwqbniiipotseztuqmpa',
+        'PASSWORD': 'familiaXD1175',
+        'HOST': 'aws-0-sa-east-1.pooler.supabase.com',
+        'PORT': '6543',
     }
 }
 
