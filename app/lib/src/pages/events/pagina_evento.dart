@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/src/pages/events/carrinho_page.dart';
+import 'package:app/src/pages/events/listagem_eventos.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
@@ -21,12 +22,18 @@ class _EventDetailPageState extends State<EventDetailPage> {
   String? _saldo;
   bool _isLoading = true;
   int? _selectedProductId;
+
   @override
   void initState() {
     super.initState();
-    _fetchEventDetails();
-    _fetchUserSaldo();
-    _fetchProdutos();
+    _fetchEventDetails(); // Detalhes do evento são carregados apenas uma vez
+    _fetchProdutos(); // Produtos são carregados apenas uma vez
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchUserSaldo(); // Atualiza o saldo toda vez que a página é carregada
   }
 
   Future<void> _fetchEventDetails() async {
@@ -94,6 +101,21 @@ class _EventDetailPageState extends State<EventDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detalhes do Evento'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              // Navega para a página de listagem de eventos sem remover as rotas anteriores
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      UserEventsPage(), // Página de listagem de eventos
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -208,11 +230,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 MaterialPageRoute(
                   builder: (context) => CarrinhoPage(
                     produtosNoCarrinho: _carrinho,
-                    eventoId: widget.eventId, // Passe o ID do evento selecionado
+                    eventoId:
+                        widget.eventId, // Passe o ID do evento selecionado
                   ),
                 ),
               );
-            }// Outras ações
+            } // Outras ações
           },
         ),
         Text(label),
