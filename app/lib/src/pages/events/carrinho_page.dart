@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CarrinhoPage extends StatefulWidget {
   final List<dynamic> produtosNoCarrinho;
-  final int eventoId; // Adiciona o evento
+  final int eventoId;
 
   CarrinhoPage({required this.produtosNoCarrinho, required this.eventoId});
 
@@ -78,13 +78,7 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
                       ElevatedButton(
                         onPressed: () async {
                           final totalCompra = _calcularTotal();
-                          await atualizarSaldo(context, totalCompra, widget.eventoId);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Compra realizada (fictício)'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                          await finalizarCompra(context, totalCompra, widget.eventoId);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
@@ -101,7 +95,7 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
     );
   }
 
-    Future<void> atualizarSaldo(BuildContext context, double totalCompra, int eventoId) async {
+  Future<void> finalizarCompra(BuildContext context, double totalCompra, int eventoId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userUid = prefs.getString('user_uid');
 
@@ -159,14 +153,56 @@ class _CarrinhoPageState extends State<CarrinhoPage> {
         throw Exception('Erro ao atualizar saldo do cliente');
       }
 
+      // 3. Registrar a transação
+      await registrarTransacao(context, totalCompra, saldoUid, eventoId);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saldo atualizado com sucesso!')),
+        SnackBar(content: Text('Compra finalizada com sucesso!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao atualizar saldo: $e')),
+        SnackBar(content: Text('Erro ao finalizar compra: $e')),
       );
     }
   }
 
+  Future<void> registrarTransacao(
+      BuildContext context, double valor, String saldoUid, int eventoId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userUid = prefs.getString('user_uid');
+
+    if (userUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: Usuário não autenticado.')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/event/api/transacoes/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "uid": saldoUid,
+          "value": valor.toStringAsFixed(2),
+          "type": 0,
+          "hash": "123", // Gerar hash único se necessário
+          "done_at": DateTime.now().toIso8601String(),
+          "currency": saldoUid,
+        }),
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('Erro ao registrar transação.');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Transação registrada com sucesso!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao registrar transação: $e')),
+      );
+    }
+  }
 }
