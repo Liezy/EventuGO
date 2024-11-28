@@ -11,6 +11,7 @@ class Event(models.Model):
     start_date = models.DateTimeField(verbose_name="Data de Início")
     end_date = models.DateTimeField(verbose_name="Data de Término")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Empresa")
+    image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Imagem")
 
     class Meta:
         verbose_name = "Evento"
@@ -60,6 +61,7 @@ class Product(models.Model):
     qtd_stock = models.PositiveIntegerField(verbose_name="Quantidade em Estoque")  # Estoque
     is_active = models.BooleanField(default=True, verbose_name="Ativo")  # Ativo ou inativo
     events = models.ManyToManyField('Event', blank=True, related_name="products", verbose_name="Eventos")
+    image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Imagem")
 
     def __str__(self):
         return self.name

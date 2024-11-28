@@ -39,33 +39,36 @@
     }
     </style>
 
-    <!-- Cards de empresas -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for company in companies %}
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">{{ company.name }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">CNPJ: {{ company.cnpj }}</h6>
-                    <p class="card-text">
-                        <a href="{{ company.ico_url }}" target="_blank">Ícone da Empresa</a>
-                    </p>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Data de Criação:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</li>
-                </ul>
-                <div class="card-footer">
-                    <a href="{% url 'companyEdit' company.pk %}" class="btn btn-primary">Ver detalhes</a>
+
+    
+        <!-- Cards de empresas -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for company in companies %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ company.name }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">CNPJ: {{ company.cnpj }}</h6>
+                        <p class="card-text">
+                            <a href="{{ company.ico_url }}" target="_blank">Ícone da Empresa</a>
+                        </p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Data de Criação:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</li>
+                    </ul>
+                    <div class="card-footer">
+                        <a href="{% url 'companyEdit' company.pk %}" class="btn btn-primary">Ver detalhes</a>
+                    </div>
                 </div>
             </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-center">Nenhuma Empresa encontrada.</p>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <p class="text-center">Nenhuma Empresa encontrada.</p>
-        </div>
-        {% endfor %}
     </div>
-
+    
 </div>
 
 {% endblock content %}

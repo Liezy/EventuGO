@@ -3,20 +3,22 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from company.models import Company
+from users.models import CustomUser
+from event.models import Transaction, Event, Balance, Product
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from .forms import LoginForm, SignUpForm, EventForm, CompanyForm
-from users.models import CustomUser
-from event.models import Transaction, Event, Balance
+from .forms import LoginForm, SignUpForm, EventForm, CompanyForm, ProductForm
 from company.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, UpdateView, CreateView
+from django.views.generic import TemplateView, UpdateView, CreateView, DetailView
 from django.db import IntegrityError
 from django.contrib import messages
 from django.urls import reverse_lazy
 import json
 import random
 import uuid
+from django.shortcuts import get_object_or_404
+
 @method_decorator(csrf_exempt, name='dispatch')
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home/index.html'
@@ -69,8 +71,9 @@ class EventView(LoginRequiredMixin, TemplateView):
     template_name = 'home/event.html'
     
     def get_context_data(self, **kwargs):
-        context =super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         
+        # Pega todos os eventos
         context['events'] = Event.objects.all()
         return context
     
@@ -90,6 +93,20 @@ class EventEditView(LoginRequiredMixin, UpdateView):
         context['title'] = f"Editar Evento: {self.object.name}"
       
         context['form'] = self.get_form()
+        return context
+    
+class EventDetailView(LoginRequiredMixin, DetailView):
+    model = Event
+    template_name = 'home/event_detalhe.html'
+    context_object_name = 'event'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Carrega os produtos associados ao evento
+        event = self.get_object()
+        context['products'] = event.products.all()  # Recupera os produtos associados ao evento
+        
         return context
 class EventCreateView(LoginRequiredMixin, CreateView):
     model = Event
@@ -207,3 +224,42 @@ class CompanyEditView(LoginRequiredMixin, UpdateView):
         # Opcional: mensagens de sucesso ou outra lógica adicional
         messages.success(self.request, 'Empresa atualizada com sucesso!')
         return super().form_valid(form)
+
+class AddProductView(LoginRequiredMixin, TemplateView):
+    template_name = 'home/add_product.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event_id = self.kwargs.get('event_id')
+        event = Event.objects.get(id=event_id)
+        context['event'] = event
+        context['form'] = ProductForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        event_id = self.kwargs.get('event_id')
+        event = Event.objects.get(id=event_id)
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.save()
+            product.events.add(event)  # Associa o produto ao evento
+            return redirect('eventDetails', event_id=event.id)
+        return render(request, 'home/add_product.html', {'form': form, 'event': event})
+
+
+class ProductEditView(LoginRequiredMixin, UpdateView):
+    model = Product
+    form_class = ProductForm  # Usando o formulário já definido
+    template_name = 'home/product_edit.html'
+    context_object_name = 'product'
+
+    def get_success_url(self):
+        # Após salvar, redireciona para a página de detalhes do evento
+        return reverse_lazy('eventDetalhe', kwargs={'event_pk': self.object.event.pk})
+
+    def get_context_data(self, **kwargs):
+        # Contexto adicional para customizar o título
+        context = super().get_context_data(**kwargs)
+        context['title'] = f"Editar Produto: {self.object.name}"
+        return context
