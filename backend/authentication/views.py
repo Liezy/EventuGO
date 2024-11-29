@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, UpdateView, CreateView, DetailView
 from django.db import IntegrityError
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 import json
 import random
 import uuid
@@ -248,15 +248,21 @@ class AddProductView(LoginRequiredMixin, TemplateView):
         return render(request, 'home/add_product.html', {'form': form, 'event': event})
 
 
-class ProductEditView(LoginRequiredMixin, UpdateView):
+class ProductEditView(UpdateView):
     model = Product
-    form_class = ProductForm  # Usando o formulário já definido
-    template_name = 'home/product_edit.html'
-    context_object_name = 'product'
+    form_class = ProductForm
+    template_name = "home/product_edit.html"
 
     def get_success_url(self):
-        # Após salvar, redireciona para a página de detalhes do evento
-        return reverse_lazy('eventDetalhe', kwargs={'event_pk': self.object.event.pk})
+        # Seleciona o primeiro evento associado ao produto, se existir
+        event = self.object.events.first()
+        if event:
+            # Redireciona para a página de detalhes do evento
+            return reverse('eventDetalhe', kwargs={'pk': event.pk})
+        # Caso não haja eventos associados, redireciona para a lista de eventos
+        return reverse('eventos')
+
+
 
     def get_context_data(self, **kwargs):
         # Contexto adicional para customizar o título

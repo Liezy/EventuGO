@@ -56,8 +56,9 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Data de Criação:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</li>
                     </ul>
+                              <a href="{% url 'companyEdit' company.pk %}" class="btn btn-primary">Ver detalhes</a>
                     <div class="card-footer">
-                        <a href="{% url 'companyEdit' company.pk %}" class="btn btn-primary">Ver detalhes</a>
+              
                     </div>
                 </div>
             </div>
