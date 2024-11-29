@@ -244,7 +244,8 @@ class AddProductView(LoginRequiredMixin, TemplateView):
             product = form.save(commit=False)
             product.save()
             product.events.add(event)  # Associa o produto ao evento
-            return redirect('eventDetails', event_id=event.id)
+            return redirect('eventDetalhe', pk=event.id)
+
         return render(request, 'home/add_product.html', {'form': form, 'event': event})
 
 
