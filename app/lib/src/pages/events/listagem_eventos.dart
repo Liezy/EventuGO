@@ -56,6 +56,7 @@ class _UserEventsPageState extends State<UserEventsPage>
       List<dynamic> saldos = jsonDecode(utf8.decode(saldoResponse.bodyBytes));
       print('Saldos recebidos: $saldos');
 
+      // Filtro para pegar os IDs dos eventos com base no saldo do usuário
       List<int> eventIds = saldos
           .where((saldo) => saldo['user'] == userUid)
           .map<int>((saldo) => saldo['event'] as int)
@@ -63,7 +64,7 @@ class _UserEventsPageState extends State<UserEventsPage>
 
       print('Event IDs filtrados: $eventIds');
 
-      // Fetch eventos e separar os que o usuário está participando e os que não está
+      // Buscar eventos e separar os que o usuário está participando e os que não está
       await _fetchEventDetails(eventIds);
     } else {
       print('Erro ao buscar saldos: ${saldoResponse.statusCode}');
@@ -77,11 +78,12 @@ class _UserEventsPageState extends State<UserEventsPage>
     final eventosResponse =
         await http.get(Uri.parse('http://127.0.0.1:8000/event/api/eventos/'));
     if (eventosResponse.statusCode == 200) {
-      List<dynamic> eventos = jsonDecode(utf8.decode(eventosResponse.bodyBytes));
+      List<dynamic> eventos =
+          jsonDecode(utf8.decode(eventosResponse.bodyBytes));
       print('Eventos recebidos: $eventos');
 
       setState(() {
-        // Separar os eventos em duas listas
+        // Separar os eventos em duas listas: Participando e Não Participando
         _eventosParticipando =
             eventos.where((evento) => eventIds.contains(evento['id'])).toList();
         _eventosNaoParticipando = eventos
@@ -96,7 +98,12 @@ class _UserEventsPageState extends State<UserEventsPage>
 
   Future<void> _createBalanceAndEnterEvent(dynamic evento) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userUid = prefs.getString('user_uid');
+    String? userUid = prefs.getString('user_uid'); // Verifique se é nulo
+    if (userUid == null) {
+      // Se for nulo, trate o erro
+      print('Erro: userUid é nulo');
+      return; // Impede a execução do restante do código
+    }
 
     final saldoResponse =
         await http.get(Uri.parse('http://127.0.0.1:8000/event/api/saldos/'));
@@ -123,6 +130,16 @@ class _UserEventsPageState extends State<UserEventsPage>
           print('Erro ao criar saldo: ${createBalanceResponse.statusCode}');
         }
       }
+
+      // Salva os dados do evento selecionado nas SharedPreferences
+      await prefs.setString('selected_event_id', evento['id'].toString());
+      await prefs.setString('selected_event_uuid', evento['uid'] ?? '');
+      await prefs.setString('selected_user_id', userUid);
+
+      print('Dados do evento salvos:');
+      print('Evento ID: ${evento['id']}');
+      print('Evento UUID: ${evento['uid']}');
+      print('User ID: $userUid');
 
       Navigator.push(
         context,
@@ -193,7 +210,6 @@ class _UserEventsPageState extends State<UserEventsPage>
                                       vertical: 8, horizontal: 16),
                                   child: Column(
                                     children: [
-                                      // Adicionando imagem ao card
                                       ClipRRect(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(8)),
@@ -237,7 +253,6 @@ class _UserEventsPageState extends State<UserEventsPage>
                                       vertical: 8, horizontal: 16),
                                   child: Column(
                                     children: [
-                                      // Adicionando imagem ao card
                                       ClipRRect(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(8)),
@@ -266,5 +281,4 @@ class _UserEventsPageState extends State<UserEventsPage>
             ),
     );
   }
-
 }

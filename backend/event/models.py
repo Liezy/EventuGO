@@ -20,9 +20,9 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
-class Balance(models.Model):  
-    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")  # Adicione default=uuid.uuid4
-    currency = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Saldo")  
+class Balance(models.Model):
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
+    currency = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Saldo")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name="Evento")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
@@ -31,6 +31,26 @@ class Balance(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.event}'
+
+    def recharge(self, amount):
+        """
+        Método para recarregar o saldo.
+        """
+        if amount <= 0:
+            raise ValueError("O valor da recarga deve ser positivo.")
+
+        self.currency += amount
+        self.save()
+
+        # Cria a transação de recarga
+        transaction = Transaction.objects.create(
+            value=amount,
+            type=0,  # 0 representa 'Recarga'
+            hash=uuid.uuid4().hex,
+            currency=self,
+        )
+        return transaction
+
 
 class Transaction(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")

@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import login_view, register_user, HomeView, logout_view, EventView, EventEditView, EventCreateView, PerfilView, CompanyViwe, CompanyCreateView, CompanyEditView, AddProductView, EventDetailView, ProductEditView
+from .views import login_view, register_user, HomeView, logout_view, EventView, EventEditView, EventCreateView, PerfilView, CompanyViwe, CompanyCreateView, CompanyEditView, AddProductView, EventDetailView, ProductEditView, get_user_info, process_qr_recharge
+from . import views
 
 urlpatterns = [
     path('login/', login_view, name="login"),        
@@ -9,7 +10,8 @@ urlpatterns = [
     path('eventos/', EventView.as_view(), name="eventos"),
     path('eventDetalhe/<int:pk>/', EventDetailView.as_view(), name="eventDetalhe"),
     path('auth/eventDetalhe/<int:event_id>/', AddProductView.as_view(), name='addProduct'),
-
+    path('get_user_info/', views.get_user_info, name='get_user_info'),
+    path('process-qr-recharge/', views.process_qr_recharge, name='process_qr_recharge'),
     path('produto/editar/<int:pk>/', ProductEditView.as_view(), name='productEdit'),
     path('eventEdit/<int:pk>/', EventEditView.as_view(), name="eventEdit"),
     path('eventCreate/', EventCreateView.as_view(), name="eventCreate"),
