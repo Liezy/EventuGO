@@ -34,6 +34,11 @@ Author: [Eliezer](https://github.com/Liezy) 25/08/2024
 
 O Eventugo é uma solução desenvolvida para facilitar a gestão de créditos em eventos, substituindo as tradicionais comandas físicas por um sistema digital. O projeto visa criar uma experiência mais conveniente e segura para os participantes, que poderão recarregar e utilizar seus créditos por meio de um aplicativo móvel. O sistema permite a realização de transações utilizando QR codes, com visualização de saldo em tempo real e acompanhamento do histórico de transações.
 
+## Links Importantes
+
+- **Download do App (APK):** [Clique aqui para baixar o aplicativo](https://github.com/Liezy/EventuGO/releases/download/V4.0.0/app-release.apk)
+- **Acesse o Painel Administrativo:** [Clique aqui para acessar](https://1a19-200-129-179-189.ngrok-free.app/auth/login/)
+
 ## Sprints
 Acesse o planejamento das sprints [aqui.](https://alluring-sail-8e9.notion.site/Sprints-fffca21a82e280b89075d5bef259910e?pvs=4)
 
