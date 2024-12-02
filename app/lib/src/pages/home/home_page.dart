@@ -14,7 +14,7 @@ class _HomePageState extends State<HomePage> {
     print('Botão QR Code pressionado!');
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EventEntryPage()),
+      MaterialPageRoute(builder: (context) => QrCodeScanPage()),
     );
   }
 

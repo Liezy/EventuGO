@@ -2,75 +2,170 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from company.models import Company
+from users.models import CustomUser
+from event.models import Transaction, Event, Balance, Product
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from .forms import LoginForm, SignUpForm, EventForm, CompanyForm
-from users.models import CustomUser
-from event.models import Transaction, Event, Balance
+from .forms import LoginForm, SignUpForm, EventForm, CompanyForm, ProductForm
 from company.models import Company
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, UpdateView, CreateView
+from django.views.generic import TemplateView, UpdateView, CreateView, DetailView
 from django.db import IntegrityError
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 import json
 import random
 import uuid
+
+@csrf_exempt
+
+def get_user_info(request):
+    """
+    Retorna as informações do usuário baseado no ID do balance escaneado.
+    """
+    try:
+        # Obtém os dados do corpo da requisição
+        data = json.loads(request.body)
+        balance_id = data.get('saldo_uid')
+        
+        # Validações básicas
+        if not balance_id:
+            return JsonResponse({'status': 'error', 'message': 'ID do saldo não fornecido'}, status=400)
+        
+        # Busca o balance e o usuário
+        try:
+            balance = Balance.objects.get(uid=balance_id)
+            user = balance.user
+            saldo = balance.currency
+            
+            return JsonResponse({
+                'status': 'success',
+                'user_name': user.first_name,  # Usando first_name no lugar de name
+                'saldo': saldo
+            })
+        
+        except Balance.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Saldo não encontrado'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def process_qr_recharge(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        saldo_uid = data.get('saldo_uid')
+        valor_recarga = data.get('valor_recarga')
+        event_id = data.get('event_id')
+
+        if not saldo_uid or valor_recarga is None or not event_id:
+            return JsonResponse({'status': 'error', 'message': 'Dados incompletos no QR Code.'})
+
+        try:
+            # Encontrar o objeto Balance com o saldo_uid e event_id
+            balance = Balance.objects.get(uid=saldo_uid, event_id=event_id)
+            
+            # Recarregar o saldo usando o método da model
+            transaction = balance.recharge(valor_recarga)
+
+            return JsonResponse({'status': 'success', 'message': f'Recarga de R$ {valor_recarga:.2f} realizada com sucesso.'})
+        
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Saldo não encontrado ou evento inválido.'})
+
+        except ValueError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Erro inesperado: {str(e)}'})
+
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home/index.html'
     login_url = '/auth/login/'
-    
+
     def get_context_data(self, **kwargs):
+        """
+        Adiciona dados adicionais ao contexto do template.
+        """
         context = super().get_context_data(**kwargs)
         context['total_eventos'] = Event.objects.count()
         context['total_transacoes'] = Transaction.objects.count()
         context['total_usuarios'] = CustomUser.objects.count()
         context['total_empresas'] = Company.objects.count()
-        context['transacoes'] = Transaction.objects.all()[:5]  # Limit to 5 most recent transactions
+        context['transacoes'] = Transaction.objects.all()[:5]  # Limita às 5 transações mais recentes
         return context
 
-
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        qr_data = data.get('qr_data')
-        balance_id = data.get('balance_id')  # ID do Balance associado
+        """
+        Processa requisições POST para confirmação ou cancelamento de recargas.
+        """
+        try:
+            # Decodificar dados JSON da requisição
+            data = json.loads(request.body)
+            action = data.get('action')  # 'confirm' ou 'cancel'
+            balance_id = data.get('balance_id')  # ID do Balance associado
 
-        # Processa o QR code se ele estiver presente
-        if qr_data:
-            try:
-                # Aqui você pode processar os dados do QR code conforme necessário
-                # Se o QR code contém o ID do balance, você pode processar a recarga
-                balance = Balance.objects.get(uid=balance_id, user=request.user)
+            # Verifica a ação 'confirm'
+            if action == 'confirm':
+                return self.confirm_recharge(balance_id, request)
 
-                # Cria a transação de recarga
-                transaction = Transaction.objects.create(
-                    value=balance.currency,  # Ou outro valor se necessário
-                    type=0,  # 0 representa 'Recarga'
-                    hash=uuid.uuid4().hex,  # Um hash único para a transação
-                    currency=balance
-                )
+            # Verifica a ação 'cancel'
+            elif action == 'cancel':
+                return JsonResponse({'status': 'success', 'message': 'Recarga cancelada'})
 
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Recarga processada com sucesso',
-                    'transaction_id': transaction.uid
-                })
-            except Balance.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Saldo não encontrado'}, status=404)
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            # Retorna erro se a ação não for válida
+            return JsonResponse({'status': 'error', 'message': 'Ação inválida'}, status=400)
 
-        return JsonResponse({'status': 'error', 'message': 'Dados inválidos'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Erro ao decodificar os dados da requisição'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    def confirm_recharge(self, balance_id, request):
+        """
+        Confirma a recarga com base no ID do saldo.
+        """
+        try:
+            # Busca o saldo associado ao usuário autenticado
+            balance = Balance.objects.get(uid=balance_id, user=request.user)
+
+            # Cria uma transação de recarga
+            transaction = Transaction.objects.create(
+                value=balance.currency,
+                type=0,  # 0 representa 'Recarga'
+                hash=uuid.uuid4().hex,
+                currency=balance
+            )
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Recarga confirmada com sucesso',
+                'transaction_id': str(transaction.uid),
+                'new_balance': float(balance.currency)  # Retorna o saldo atualizado
+            })
+
+        except Balance.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Carteira não encontrada'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
     
 class EventView(LoginRequiredMixin, TemplateView):
     template_name = 'home/event.html'
     
     def get_context_data(self, **kwargs):
-        context =super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         
+        # Pega todos os eventos
         context['events'] = Event.objects.all()
         return context
     
@@ -90,6 +185,20 @@ class EventEditView(LoginRequiredMixin, UpdateView):
         context['title'] = f"Editar Evento: {self.object.name}"
       
         context['form'] = self.get_form()
+        return context
+    
+class EventDetailView(LoginRequiredMixin, DetailView):
+    model = Event
+    template_name = 'home/event_detalhe.html'
+    context_object_name = 'event'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Carrega os produtos associados ao evento
+        event = self.get_object()
+        context['products'] = event.products.all()  # Recupera os produtos associados ao evento
+        
         return context
 class EventCreateView(LoginRequiredMixin, CreateView):
     model = Event
@@ -207,3 +316,49 @@ class CompanyEditView(LoginRequiredMixin, UpdateView):
         # Opcional: mensagens de sucesso ou outra lógica adicional
         messages.success(self.request, 'Empresa atualizada com sucesso!')
         return super().form_valid(form)
+
+class AddProductView(LoginRequiredMixin, TemplateView):
+    template_name = 'home/add_product.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event_id = self.kwargs.get('event_id')
+        event = Event.objects.get(id=event_id)
+        context['event'] = event
+        context['form'] = ProductForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        event_id = self.kwargs.get('event_id')
+        event = Event.objects.get(id=event_id)
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.save()
+            product.events.add(event)  # Associa o produto ao evento
+            return redirect('eventDetalhe', pk=event.id)
+
+        return render(request, 'home/add_product.html', {'form': form, 'event': event})
+
+
+class ProductEditView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "home/product_edit.html"
+
+    def get_success_url(self):
+        # Seleciona o primeiro evento associado ao produto, se existir
+        event = self.object.events.first()
+        if event:
+            # Redireciona para a página de detalhes do evento
+            return reverse('eventDetalhe', kwargs={'pk': event.pk})
+        # Caso não haja eventos associados, redireciona para a lista de eventos
+        return reverse('eventos')
+
+
+
+    def get_context_data(self, **kwargs):
+        # Contexto adicional para customizar o título
+        context = super().get_context_data(**kwargs)
+        context['title'] = f"Editar Produto: {self.object.name}"
+        return context

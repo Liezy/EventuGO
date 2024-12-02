@@ -11,6 +11,7 @@ class Event(models.Model):
     start_date = models.DateTimeField(verbose_name="Data de Início")
     end_date = models.DateTimeField(verbose_name="Data de Término")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Empresa")
+    image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Imagem")
 
     class Meta:
         verbose_name = "Evento"
@@ -19,9 +20,9 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
-class Balance(models.Model):  
-    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")  # Adicione default=uuid.uuid4
-    currency = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Saldo")  
+class Balance(models.Model):
+    uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
+    currency = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Saldo")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name="Evento")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
 
@@ -30,6 +31,26 @@ class Balance(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.event}'
+
+    def recharge(self, amount):
+        """
+        Método para recarregar o saldo.
+        """
+        if amount <= 0:
+            raise ValueError("O valor da recarga deve ser positivo.")
+
+        self.currency += amount
+        self.save()
+
+        # Cria a transação de recarga
+        transaction = Transaction.objects.create(
+            value=amount,
+            type=0,  # 0 representa 'Recarga'
+            hash=uuid.uuid4().hex,
+            currency=self,
+        )
+        return transaction
+
 
 class Transaction(models.Model):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UID")
@@ -57,8 +78,10 @@ class Product(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nome")
     description = models.TextField(null=True, blank=True, verbose_name="Descrição")
     value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
-    qtd_stock = models.PositiveIntegerField(verbose_name="Quantidade em Estoque")  # estoque
-    is_active = models.BooleanField(default=True, verbose_name="Ativo")  # ativo (sim/não)
+    qtd_stock = models.PositiveIntegerField(verbose_name="Quantidade em Estoque")  # Estoque
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")  # Ativo ou inativo
+    events = models.ManyToManyField('Event', blank=True, related_name="products", verbose_name="Eventos")
+    image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Imagem")
 
     def __str__(self):
         return self.name
@@ -66,6 +89,7 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
+
 
 class Sale(models.Model):
     TYPE_CHOICES = [
@@ -90,6 +114,9 @@ class Sale(models.Model):
     where = models.CharField(max_length=255, verbose_name="Local da Venda", null=True, blank=True)
     done_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Venda")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuário")
+    
+    # Produtos e suas quantidades na venda
+    products = models.ManyToManyField(Product, through='SaleProduct', verbose_name="Produtos")
 
     def __str__(self):
         return f"Venda {self.id} - {self.get_type_display()}"
@@ -98,10 +125,12 @@ class Sale(models.Model):
         verbose_name = "Venda"
         verbose_name_plural = "Vendas"
 
-class ProductSale(models.Model):
+
+class SaleProduct(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Produto")
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, verbose_name="Venda")
     quantity = models.PositiveIntegerField(verbose_name="Quantidade")
+    value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário", default=0)
 
     def __str__(self):
         return f"{self.quantity}x {self.product.name} (Venda ID: {self.sale.id})"

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from users.models import CustomUser 
-from event.models import Event
+from event.models import Event, Product
 from company.models import Company
 from django.core.exceptions import ValidationError
 
@@ -132,3 +132,15 @@ class CompanyForm(forms.ModelForm):
             'ico_url': 'Ícone URL',
             'cnpj': 'CNPJ',
         }
+        
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'value', 'qtd_stock', 'image']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Descrição do produto...'}),
+            'value': forms.NumberInput(attrs={'placeholder': 'R$'}),
+            'qtd_stock': forms.NumberInput(attrs={'placeholder': 'Quantidade em estoque'}),
+            'image': forms.ClearableFileInput(attrs={'accept': 'image/*'})
+        }
+        

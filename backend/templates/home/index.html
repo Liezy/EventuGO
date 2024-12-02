@@ -31,7 +31,6 @@
   }
 </style>
 {% endblock stylesheets %}
-
 {% block content %}
   <!-- Header -->
   <div class="header bg-primary pb-6">
@@ -130,53 +129,36 @@
   <!-- Page content -->
   <div class="container-fluid mt--6">
     <div class="row">
-      <div class="col-xl-8">
+      <!-- QR Code Scanner -->
+      <div class="col-xl-8 col-lg-7">
         <div class="card bg-default">
           <div class="card-header bg-transparent">
-            <div class="row align-items-center">
-              <div class="col">
-                <h5 class="h3 text-white mb-0">Escanear QR Code</h5>
-              </div>
-            </div>
+            <h5 class="h3 text-white mb-0">Escanear QR Code</h5>
           </div>
           <div class="card-body">
-            <div id="qr-reader" style="width: 100%; height: 300px;"></div>
-            <div class="mt-3">
+            <div id="qr-reader"></div>
+            <div class="mt-3 text-center">
               <button id="startButton" class="btn btn-primary mr-2">Iniciar Scanner</button>
               <button id="stopButton" class="btn btn-danger" style="display: none;">Parar Scanner</button>
-            </div>
-            <div id="floatingCard" style="display: none; margin-top: 20px;">
-              <div class="card">
-                <div class="card-body">
-                  <p id="scannedInfo"></p>
-                  <button id="closeCard" class="btn btn-secondary">Fechar</button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
+  
       <!-- Histórico de Transações -->
-      <div class="col-xl-4">
+      <div class="col-xl-4 col-lg-5" id="transaction-history">
         <div class="card">
           <div class="card-header bg-transparent">
-            <div class="row align-items-center">
-              <div class="col">
-                <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-                <h5 class="h3 mb-0">Histórico de Transações</h5>
-              </div>
-            </div>
+            <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
+            <h5 class="h3 mb-0">Histórico de Transações</h5>
           </div>
           <div class="card-body">
             <ul>
               {% for transacaos in transacoes %}
-                <li>
+                <li class="mb-3">
                   <strong>Tipo:</strong> {{ transacaos.type }} <br>
                   <strong>Valor:</strong> R$ {{ transacaos.value }} <br>
-                  <strong>Data:</strong> {{ transacaos.done_at }} <br>
+                  <strong>Data:</strong> {{ transacaos.done_at|date:"d/m/Y H:i" }}
                 </li>
               {% empty %}
                 <p>Nenhuma transação encontrada.</p>
@@ -186,100 +168,180 @@
         </div>
       </div>
     </div>
-
-    <!-- Card flutuante para exibir informações escaneadas -->
-    <div id="floatingCard">
-      <span id="closeCard">&times;</span>
-      <h3>Informações Escaneadas</h3>
-      <p id="scannedInfo"></p>
+  
+    <!-- Card flutuante para informações escaneadas -->
+    <div id="floatingCard" class="floating-card">
+      <span id="closeCard" class="close-card">&times;</span>
+      <h3>Confirmação de Recarga</h3>
+      <p id="scannedUser"></p>
+      <p id="userBalance"></p> <!-- Exibe o saldo -->
+      <div class="text-center mt-4">
+        <button id="confirmButton" class="btn btn-success mr-2">Confirmar</button>
+        <button id="cancelButton" class="btn btn-danger">Cancelar</button>
+      </div>
     </div>
-
-   
+    
   </div>
-{% endblock content %}
 
-{% block javascripts %}
-{{ block.super }}
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    const startButton = document.getElementById('startButton');
-    const stopButton = document.getElementById('stopButton');
-
-    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-      console.log(`QR Code detected: ${decodedText}`);
-      displayScannedInfo(decodedText);
-      stopScanner();
-    };
-
-    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-    function startScanner() {
-      html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
-        .then(() => {
-          startButton.style.display = 'none';
-          stopButton.style.display = 'inline-block';
-        })
-        .catch((err) => {
-          console.error(`Erro ao iniciar o scanner: ${err}`);
-        });
-    }
-
-    function stopScanner() {
-      html5QrCode.stop().then(() => {
-        startButton.style.display = 'inline-block';
-        stopButton.style.display = 'none';
-      }).catch((err) => {
-        console.error(`Erro ao parar o scanner: ${err}`);
-      });
-    }
-
-    startButton.onclick = startScanner;
-    stopButton.onclick = stopScanner;
-
-    function displayScannedInfo(info) {
-      document.getElementById('scannedInfo').textContent = info;
-      document.getElementById('floatingCard').style.display = 'block';
-
-      // Enviar dados para o backend
-      fetch('', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ qr_data: info })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-        // Atualizar a interface do usuário com a resposta, se necessário
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-    }
-
-    document.getElementById('closeCard').onclick = function() {
-      document.getElementById('floatingCard').style.display = 'none';
-    };
-
-    // Função para obter o token CSRF
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
+  {% endblock content %}
+  {% block javascripts %}
+  {{ block.super }}
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      const startButton = document.getElementById('startButton');
+      const stopButton = document.getElementById('stopButton');
+      const floatingCard = document.getElementById('floatingCard');
+      const scannedUser = document.getElementById('scannedUser');
+      const confirmButton = document.getElementById('confirmButton');
+      const cancelButton = document.getElementById('cancelButton');
+      const closeCard = document.getElementById('closeCard');
+      const userBalance = document.getElementById('userBalance');
+      let scannedBalanceId = null;
+      let scannedUserName = null;
+      let scannedBalanceAmount = null;
+      let eventId = 2;  // Definido com base no exemplo, ajuste conforme necessário
+    
+      // Função de callback ao sucesso da leitura do QR Code
+      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+        console.log(`QR Code detectado: ${decodedText}`);
+    
+        try {
+          const qrData = JSON.parse(decodedText);  // Interpretando o QR Code como JSON
+          scannedBalanceId = qrData.saldo_uid;  // Obtém o saldo_uid (UUID)
+          scannedBalanceAmount = qrData.valor_recarga;  // Obtém o valor de recarga
+          eventId = qrData.event_id;  // Obtém o ID do evento
+    
+          // Verifique o valor de recarga após a leitura do QR Code
+          console.log("Valor de recarga após leitura do QR Code:", scannedBalanceAmount);
+    
+          // Requisição para obter as informações do usuário baseado no QR Code
+          fetch('/auth/get_user_info/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              saldo_uid: scannedBalanceId,  // Envia apenas o UUID
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log("Dados recebidos da API:", data);
+    
+            if (data.status === 'success') {
+              scannedUserName = data.user_name;  // Nome do usuário
+              let currentBalance = parseFloat(data.saldo);  // Converte o saldo atual do usuário para número
+    
+              // Verifica se a conversão foi bem-sucedida e aplica .toFixed()
+              if (!isNaN(currentBalance)) {
+                let formattedBalance = (currentBalance + scannedBalanceAmount).toFixed(2);  // Atualiza o saldo com o valor da recarga
+    
+                // Atualiza o card flutuante com os dados
+                scannedUser.textContent = `Usuário: ${scannedUserName}`;
+                userBalance.textContent = `Saldo: R$ ${formattedBalance}`;
+    
+                // Exibe o card para confirmação ou cancelamento
+                floatingCard.style.display = 'block';
+              } else {
+                showErrorCard("Saldo inválido. Tente novamente.");
+              }
+            } else {
+              console.log("Erro retornado pela API:", data.message);
+              showErrorCard(data.message);
+            }
+          })
+          .catch(error => {
+            console.error("Erro no processo:", error);
+            showErrorCard('Erro ao processar o QR Code. Tente novamente.');
+          });
+    
+        } catch (error) {
+          showErrorCard('Erro ao interpretar o QR Code.');
+          console.error('Erro ao interpretar QR Code:', error);
         }
+    
+        stopScanner();  // Para a leitura do QR Code
+      };
+    
+      // Função para exibir mensagem de erro no card flutuante
+      function showErrorCard(errorMessage) {
+        scannedUser.textContent = `Erro: ${errorMessage}`;
+        floatingCard.style.display = 'block';
       }
-      return cookieValue;
-    }
-  });
-</script>
-{% endblock javascripts %}
+    
+      // Função para iniciar o scanner de QR Code
+      function startScanner() {
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, qrCodeSuccessCallback)
+          .then(() => {
+            startButton.style.display = 'none';
+            stopButton.style.display = 'inline-block';
+          })
+          .catch(err => {
+            showErrorCard('Erro ao iniciar o scanner.');
+            console.error(`Erro ao iniciar o scanner: ${err}`);
+          });
+      }
+    
+      // Função para parar o scanner de QR Code
+      function stopScanner() {
+        html5QrCode.stop().then(() => {
+          startButton.style.display = 'inline-block';
+          stopButton.style.display = 'none';
+        }).catch(err => console.error(`Erro ao parar o scanner: ${err}`));
+      }
+    
+      // Iniciar o scanner ao clicar no botão
+      startButton.onclick = startScanner;
+    
+      // Parar o scanner ao clicar no botão
+      stopButton.onclick = stopScanner;
+    
+      // Confirmação da recarga
+      confirmButton.onclick = () => {
+        console.log("Valor de recarga antes de enviar a requisição:", scannedBalanceAmount);
+    
+        // Verifica se o valor da recarga é válido
+        if (scannedBalanceAmount <= 0 || isNaN(scannedBalanceAmount)) {
+          showErrorCard("Valor de recarga inválido. Tente novamente.");
+          return;
+        }
+    
+        // Requisição para atualizar o saldo do usuário com o valor da recarga
+        fetch('/auth/process-qr-recharge/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            saldo_uid: scannedBalanceId,  // Envia o UUID
+            valor_recarga: scannedBalanceAmount,  // Envia o valor da recarga
+            event_id: eventId  // Envia o ID do evento
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            alert(data.message); // Exibe a mensagem de sucesso
+          } else {
+            alert(data.message); // Exibe a mensagem de erro
+          }
+          floatingCard.style.display = 'none'; // Fecha o card flutuante
+        })
+        .catch(err => {
+          alert('Erro ao confirmar a recarga.');
+          console.error(err);
+        });
+      };
+    
+      // Cancelamento da recarga
+      cancelButton.onclick = () => {
+        floatingCard.style.display = 'none';  // Fecha o card flutuante
+      };
+    
+      // Fechar o card flutuante
+      closeCard.onclick = () => {
+        floatingCard.style.display = 'none';
+      };
+    });
+    
+    
+  </script>
+  {% endblock javascripts %}

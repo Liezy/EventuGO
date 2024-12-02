@@ -1,0 +1,138 @@
+{% extends 'layouts/base.html' %}
+
+<title>Adicionar Produto</title>
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 20px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    .form-control, .input-group-text {
+        border-radius: 10px;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none;
+        color: white;
+    }
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #0e8c7f 0%, #32d76f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .btn-cancel {
+        background-color: #6c757d;
+        border: none;
+        color: white;
+    }
+    .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Adicionar Produto ao Evento: {{ event.name }}
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form.visible_fields %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+                            
+                            {% if field.name == 'description' %}
+                                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" rows="4" placeholder="Descreva o produto...">{{ field.value|default:'' }}</textarea>
+                            {% elif field.name == 'value' %}
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control money" value="{{ field.value|default:'' }}" placeholder="Digite o valor">
+                                </div>
+                            {% elif field.name == 'image' %}
+                                <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control">
+                                {% if field.value %}
+                                    <img src="{{ field.value.url }}" alt="Imagem do Produto" style="max-width: 200px; margin-top: 10px;">
+                                {% endif %}
+                            {% else %}
+                                <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" value="{{ field.value|default:'' }}" placeholder="{{ field.label }}">
+                            {% endif %}
+                            
+                            {% if field.help_text %}
+                                <div class="form-text text-muted mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-submit btn-lg">
+                                <i class="fas fa-save me-2"></i> Salvar Produto
+                            </button>
+                            <a href="{% url 'eventDetalhe' pk=event.id %}" class="btn btn-cancel btn-lg">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
+<script>
+    // Configurando Cleave.js para formato monetário brasileiro
+    document.querySelectorAll('.money').forEach(function(input) {
+        new Cleave(input, {
+            numeral: true,
+            numeralThousandsGroupStyle: 'thousand',
+            delimiter: '.',
+            numeralDecimalMark: ',',
+            numeralDecimalScale: 2
+        });
+    });
+
+    // Substituir vírgula por ponto antes de enviar o formulário
+    document.querySelector('form').addEventListener('submit', function(event) {
+        document.querySelectorAll('.money').forEach(function(input) {
+            input.value = input.value.replace(/\./g, '').replace(',', '.');
+        });
+    });
+</script>
+{% endblock javascripts %}
